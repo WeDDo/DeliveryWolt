@@ -121,6 +121,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\WHMController.cs" />
     <Compile Include="Controllers\PackageController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
@@ -169,6 +170,11 @@
     <Content Include="Views\Delivery\Edit.cshtml" />
     <Content Include="Views\Delivery\Add.cshtml" />
     <Content Include="Views\Delivery\Details.cshtml" />
+    <Content Include="Views\WHM\index.cshtml" />
+    <Content Include="Views\WHM\PackageList.cshtml" />
+    <Content Include="Views\Package\changeState.cshtml" />
+    <Content Include="Views\WHM\registerPackage.cshtml" />
+    <Content Include="Views\WHM\changeState.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

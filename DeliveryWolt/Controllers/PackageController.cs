@@ -10,66 +10,6 @@ namespace DeliveryWolt.Controllers
 {
     public class PackageController : Controller
     {
-        List<Package> PackageList = new List<Package>(){};
-
-        // GET: Delivery
-        public ActionResult Index() //openPackageList()
-        {
-            ViewBag.ItemList = "Package Page";
-
-            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            // Select all
-            string query = "SELECT * FROM package";
-
-            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
-            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
-            commandDatabase.CommandTimeout = 60;
-            MySqlDataReader reader;
-
-            try
-            {
-                databaseConnection.Open();
-                reader = commandDatabase.ExecuteReader();
-                // Success, now list 
-
-                // If there are available rows
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        PackageList.Add(new Package(
-                            Convert.ToInt32(reader.GetString(0)),
-                            reader.GetString(1),
-                            reader.GetDouble(2),
-                            reader.GetDateTime(3),
-                            reader.GetString(4),
-                            reader.GetString(5),
-                            reader.GetDouble(6),
-                            reader.GetBoolean(7) 
-                        ));
-                        //PackageList.Add(new Package { Id = 2, Dimensions = "20x5x20", Weight = 10.00, Due = new DateTime(2021, 07, 13), Address = "Studentų Street 67", Status = "Available", CostModifier = 0, Priority = false });
-                        // Example to save in the listView1 :
-                        //string[] row = { reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3) };
-                        //var listViewItem = new ListViewItem(row);
-                        //listView1.Items.Add(listViewItem);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("No rows found.");
-                }
-
-                databaseConnection.Close();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-            }
-
-
-            return View(PackageList.OrderBy(p => p.Id).ToList());
-        }
-
         // GET: Delivery/Details/5
         public ActionResult Details(int id)
         {
@@ -206,11 +146,6 @@ namespace DeliveryWolt.Controllers
                             CostModifier = reader.GetDouble(6),
                             Priority = Convert.ToBoolean(reader.GetInt32(7))
                         };
-                        //PackageList.Add(new Package { Id = 2, Dimensions = "20x5x20", Weight = 10.00, Due = new DateTime(2021, 07, 13), Address = "Studentų Street 67", Status = "Available", CostModifier = 0, Priority = false });
-                        // Example to save in the listView1 :
-                        //string[] row = { reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3) };
-                        //var listViewItem = new ListViewItem(row);
-                        //listView1.Items.Add(listViewItem);
                     }
                 }
                 else
@@ -228,6 +163,114 @@ namespace DeliveryWolt.Controllers
             return View(package);
         }
 
+        
+
+        //public ActionResult hello()
+        //{
+        //    return this.Index();
+        //}
+        //-----------------------------------------------------------------------------------------------------------------
+        public List<Package> getWarehouse(int id)
+        {
+            List<Package> packages = new List<Package>() { }; 
+            int temp = select(id);
+            Console.WriteLine(temp);
+            packages = getPackagesFromWarehouse(temp);
+
+            return packages;
+        }
+
+        public int select(int id)
+        {
+            int idwarehouse = 0;
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = String.Format("SELECT * FROM `warehouse_manager` WHERE id = {0}", id);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            MySqlDataReader reader;
+            try
+            {
+                databaseConnection.Open();
+                reader = commandDatabase.ExecuteReader();
+                // Success, now list 
+
+                // If there are available rows
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        idwarehouse = Convert.ToInt32(reader.GetString(2));
+                    }                  
+                }
+                else
+                {
+                    Console.WriteLine("No rows found.");
+                }
+
+                databaseConnection.Close();
+            }
+            catch (Exception ex)
+
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+            return idwarehouse;
+        }
+        public List<Package> getPackagesFromWarehouse(int id)
+        {
+            List<Package> PackageList = new List<Package>() { };
+            ViewBag.ItemList = "Package Page";
+
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            // Select all
+            string query = String.Format("SELECT * FROM `package` WHERE warehouse_id = {0}", id);
+
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            MySqlDataReader reader;
+
+            try
+            {
+                databaseConnection.Open();
+                reader = commandDatabase.ExecuteReader();
+                // Success, now list 
+
+                // If there are available rows
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        PackageList.Add(new Package(
+                            Convert.ToInt32(reader.GetString(0)),
+                            reader.GetString(1),
+                            reader.GetDouble(2),
+                            reader.GetDateTime(3),
+                            reader.GetString(4),
+                            reader.GetString(5),
+                            reader.GetDouble(6),
+                            reader.GetBoolean(7),
+                            Convert.ToInt32(reader.GetString(8))
+                        ));
+                       
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No rows found.");
+                }
+
+                databaseConnection.Close();
+            }
+            catch (Exception ex)
+
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+            return PackageList;
+        }
+       
         // POST: Delivery/Edit/5
         [HttpPost]
         public ActionResult Edit(Package pack)
@@ -255,11 +298,6 @@ namespace DeliveryWolt.Controllers
                 // Ops, maybe the id doesn't exists ?
             }
             return RedirectToAction("Index");
-        }
-
-        public ActionResult hello()
-        {
-            return this.Index();
         }
     }
 }
