@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -9,6 +9,7 @@ namespace DeliveryWolt.Controllers
 {
     public class HomeController : Controller
     {
+        
         public ActionResult Index()
         {
             PackageController controller = new PackageController();
@@ -16,12 +17,7 @@ namespace DeliveryWolt.Controllers
             return View();
         }
 
-        public ActionResult OpenPackageList()
-        {
-            ViewBag.Message = "";
-
-            return View();
-        }
+       
 
         public ActionResult Contact()
         {

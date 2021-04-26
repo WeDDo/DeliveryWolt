@@ -1,21 +1,25 @@
 @model DeliveryWolt.Models.Package
 
 @{
-    ViewBag.Title = "Register package";
+    ViewBag.Title = "Edit Package";
 }
 
-<h2>Register a new package</h2>
+<h2>Edit Package</h2>
 
 
-@using (Html.BeginForm()) 
+
+
+@using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         <h4>Package</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
+        @Html.HiddenFor(model => model.Id)
+
+        <div class="form-group"style="display:none">
             @Html.LabelFor(model => model.Dimensions, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Dimensions, new { htmlAttributes = new { @class = "form-control" } })
@@ -23,7 +27,7 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group"style="display:none">
             @Html.LabelFor(model => model.Weight, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Weight, new { htmlAttributes = new { @class = "form-control" } })
@@ -31,7 +35,7 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group"style="display:none">
             @Html.LabelFor(model => model.Due, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Due, new { htmlAttributes = new { @class = "form-control" } })
@@ -39,7 +43,7 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group"style="display:none">
             @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
@@ -54,7 +58,7 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group"style="display:none">
             @Html.LabelFor(model => model.CostModifier, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.CostModifier, new { htmlAttributes = new { @class = "form-control" } })
@@ -62,7 +66,7 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group"style="display:none">
             @Html.LabelFor(model => model.Priority, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 <div class="checkbox">
@@ -71,10 +75,19 @@
                 </div>
             </div>
         </div>
+        <div class="form-group" style="display:none">
+            @Html.LabelFor(model => model.Warehouse_id, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.Warehouse_id)
+                    @Html.ValidationMessageFor(model => model.Warehouse_id, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="Save" class="btn btn-default" />
             </div>
         </div>
     </div>
