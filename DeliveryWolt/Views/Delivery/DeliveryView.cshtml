@@ -1,0 +1,42 @@
+﻿@model DeliveryWolt.Models.Delivery
+
+@{
+    ViewBag.Title = "DeliveryView";
+}
+
+<h2>DeliveryView</h2>
+
+<div>
+    <h4>Delivery</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Cost)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Cost)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TotalDistance)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TotalDistance)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Displayed)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Displayed)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
