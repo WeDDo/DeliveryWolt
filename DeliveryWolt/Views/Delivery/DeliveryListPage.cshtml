@@ -1,10 +1,10 @@
 ﻿@model DeliveryWolt.Models.Delivery
 
 @{
-    ViewBag.Title = "DeliveryView";
+    ViewBag.Title = "DeliveryListPage";
 }
 
-<h2>DeliveryView</h2>
+<h2>DeliveryListPage</h2>
 
 <div>
     <h4>Delivery</h4>
@@ -40,3 +40,11 @@
     @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
     @Html.ActionLink("Back to List", "Index")
 </p>
+
+
+<li>@Html.ActionLink("Change package state", "ChangePackageState", "Delivery")</li>
+<li>@Html.ActionLink("Remove package from delivery", "RemovePackageFromDelivery", "Delivery")</li>
+<h2>PersonalDeliveryListPage</h2>
+
+<li>@Html.ActionLink("Create new delivery", "CreateNewDelivery", "Delivery")</li>
+<li>@Html.ActionLink("Remove some deliveries from personal delivery list", "RemoveSomeDeliveries", "Delivery")</li>

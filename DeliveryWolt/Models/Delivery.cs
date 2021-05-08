@@ -14,6 +14,7 @@ namespace DeliveryWolt.Models
 
         public List<Package> packages;
 
+        public Delivery() { }
         public Delivery(int id, double cost, double totalDistance, bool displayed, List<Package> packages)
         {
             Id = id;

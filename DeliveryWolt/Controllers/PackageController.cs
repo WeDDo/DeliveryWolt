@@ -299,6 +299,43 @@ namespace DeliveryWolt.Controllers
             }
             return RedirectToAction("Index");
         }
+
+
+        //-------------------------------------------------------------------------------------
+
+        public void getPackages()
+        {
+
+        }
+
+        //-------------------------------------------------------------------------------------
+        public void changeState()
+        {
+
+        }
+        //-------------------------------------------------------------------------------------
+        public void removePackage()
+        {
+
+        }
+        //-------------------------------------------------------------------------------------
+        public int getRegionsPackageAmount()
+        {
+            List<Warehouse> deliveries = new List<Warehouse>();
+            //sql uzklausa 
+            int package_amount = 1;
+            return package_amount;
+        }
+
+        //-------------------------------------------------------------------------------------
+
+
+        public void getAvailablePackages()
+        {
+
+        }
+
+        //-------------------------------------------------------------------------------------
     }
 }
 

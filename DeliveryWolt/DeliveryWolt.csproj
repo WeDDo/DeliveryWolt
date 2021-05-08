@@ -130,6 +130,7 @@
     </Compile>
     <Compile Include="Models\Delivery.cs" />
     <Compile Include="Models\Package.cs" />
+    <Compile Include="Models\Warehouse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -165,8 +166,6 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Package\Index.cshtml" />
     <Content Include="Views\Package\Edit.cshtml" />
@@ -178,7 +177,8 @@
     <Content Include="Views\WHM\registerPackage.cshtml" />
     <Content Include="Views\WHM\changeState.cshtml" />
     <Content Include="Views\Delivery\DeliveryManPage.cshtml" />
-    <Content Include="Views\Delivery\DeliveryView.cshtml" />
+    <Content Include="Views\Delivery\DeliveryListPage.cshtml" />
+    <Content Include="Views\Delivery\ManualDeliveryPage.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
