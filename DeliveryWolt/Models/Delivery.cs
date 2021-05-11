@@ -23,5 +23,13 @@ namespace DeliveryWolt.Models
             Displayed = displayed;
             this.packages = packages;
         }
+
+        public Delivery(int id, double cost, double totalDistance, bool displayed)
+        {
+            Id = id;
+            Cost = cost;
+            TotalDistance = totalDistance;
+            Displayed = displayed;
+        }
     }
 }

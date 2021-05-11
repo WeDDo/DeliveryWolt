@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Dynamic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using DeliveryWolt.Models;
+using MySql.Data.MySqlClient;
 
 namespace DeliveryWolt.Controllers
 {
@@ -21,29 +24,38 @@ namespace DeliveryWolt.Controllers
         public ActionResult openDeliveryView()
         {
             List<Delivery> deliveries = getDeliveries();
-            PackageController packageController = new PackageController();
-            packageController.getPackages();
-
-            // drawDeliveryRoute method
-            //displayDeliveryPage(deliveries);
+            // Draw delivey route method
 
             return displayDeliveryPage(deliveries);
         }
 
+
         public List<Delivery> getDeliveries()
         {
-            List<Delivery> deliveries = new List<Delivery>() {
-                new Delivery(0, 10, 10, true, new List<Package>{ new Package(0, "11x11x11", 10, new DateTime(2011,11,11), "AA", "AAA", 12.5, false, 7 )}),
-                new Delivery(1, 10, 10, true, new List<Package>{ new Package(0, "11x11x11", 10, new DateTime(2011,11,11), "AA", "AAA", 12.5, false, 7 )}),
-                new Delivery(2, 10, 10, true, new List<Package>{ new Package(0, "11x11x11", 10, new DateTime(2011,11,11), "AA", "AAA", 12.5, false, 7 )})
-            };
+            DataTable table = new DataTable();
+            List<Delivery> deliveries = new List<Delivery>();
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = String.Format("SELECT * FROM delivery");
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
+            cmd.CommandTimeout = 60;
 
+            databaseConnection.Open();
+            MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
+            adapter.Fill(table);
+            foreach (DataRow row in table.Rows)
+            {
+                deliveries.Add(new Delivery((int)row[0], (double)row[1], (double)row[2], (bool)row[3]));
+            }
+            databaseConnection.Close();
             return deliveries;
         }
 
         public ActionResult displayDeliveryPage(List<Delivery> deliveries)
         {
-            return View("DeliveryListPage", deliveries[0]);
+            dynamic model = new ExpandoObject();
+            model.deliveries = deliveries;
+            return View("DeliveryListPage", model);
         }
 
         //-------------------------------------------------------------------------------------

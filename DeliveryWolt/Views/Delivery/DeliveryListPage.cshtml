@@ -1,50 +1,85 @@
-﻿@model DeliveryWolt.Models.Delivery
-
+﻿@using DeliveryWolt.Models
+@model dynamic
 @{
     ViewBag.Title = "DeliveryListPage";
 }
 
-<h2>DeliveryListPage</h2>
 
-<div>
-    <h4>Delivery</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Cost)
-        </dt>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>DeliveryListPage</title>
+</head>
+<body>
+    @foreach (Delivery item in Model.deliveries)
+    {
+        <div>
+            <dl class="dl-horizontal">
+                <dt>
+                    @Html.DisplayNameFor(model => item.Id)
+                </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.Cost)
-        </dd>
+                <dd>
+                    @Html.DisplayFor(model => item.Id)
+                </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.TotalDistance)
-        </dt>
+                <dt>
+                    @Html.DisplayNameFor(model => item.Cost)
+                </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.TotalDistance)
-        </dd>
+                <dd>
+                    @Html.DisplayFor(model => item.Cost)
+                </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Displayed)
-        </dt>
+                <dt>
+                    @Html.DisplayNameFor(model => item.TotalDistance)
+                </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.Displayed)
-        </dd>
+                <dd>
+                    @Html.DisplayFor(model => item.TotalDistance)
+                </dd>
 
-    </dl>
-</div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+                @*<dt>
+                    @Html.DisplayNameFor(model => item.packages)
+                </dt>
+                @foreach (var package in item.packages)
+                {
+                    <dd>
+                        Id: @Html.DisplayFor(model => package.Id)<br />
+                        Dimensions: @Html.DisplayFor(model => package.Dimensions)<br />
+                        Weight: @Html.DisplayFor(model => package.Weight)<br />
+                        Due: @Html.DisplayFor(model => package.Due)<br />
+                        Adress: @Html.DisplayFor(model => package.Address)<br />
+                        Status: @Html.DisplayFor(model => package.Status)<br />
+                        Cost modifier: @Html.DisplayFor(model => package.CostModifier)<br />
+                        Priority: @Html.DisplayFor(model => package.Priority)<br />
+                        Waregouse id: @Html.DisplayFor(model => package.Warehouse_id)<br />
+                    </dd>
+                    <br />
+                }
+                <hr />*@
+            </dl>
+        </div>
+    }
+
+</body>
+</html>
 
 
-<li>@Html.ActionLink("Change package state", "ChangePackageState", "Delivery")</li>
-<li>@Html.ActionLink("Remove package from delivery", "RemovePackageFromDelivery", "Delivery")</li>
-<h2>PersonalDeliveryListPage</h2>
 
-<li>@Html.ActionLink("Create new delivery", "CreateNewDelivery", "Delivery")</li>
-<li>@Html.ActionLink("Remove some deliveries from personal delivery list", "RemoveSomeDeliveries", "Delivery")</li>
+
+
+
+
+
+@*<p>
+        @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+        @Html.ActionLink("Back to List", "Index")
+    </p>*@
+
+
+@*<li>@Html.ActionLink("Change package state", "ChangePackageState", "Delivery")</li>
+    <li>@Html.ActionLink("Remove package from delivery", "RemovePackageFromDelivery", "Delivery")</li>
+    <h2>PersonalDeliveryListPage</h2>
+
+    <li>@Html.ActionLink("Create new delivery", "CreateNewDelivery", "Delivery")</li>
+    <li>@Html.ActionLink("Remove some deliveries from personal delivery list", "RemoveSomeDeliveries", "Delivery")</li>*@
