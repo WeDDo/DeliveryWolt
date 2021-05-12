@@ -367,9 +367,6 @@ namespace DeliveryWolt.Controllers
             databaseConnection.Close();
 
             return packages;
-
-
-            return null;
         }
 
         //-------------------------------------------------------------------------------------

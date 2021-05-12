@@ -19,8 +19,6 @@ namespace DeliveryWolt.Models
         public int Warehouse_id { get; set; }
         public int Delivery_id { get; set; }
         
-
-        public int Delivery_id { get; set; }
         
 
         public Package()

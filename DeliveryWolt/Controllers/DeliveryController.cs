@@ -180,7 +180,7 @@ namespace DeliveryWolt.Controllers
             int id = -1;
             foreach(var i in deliveries)
             {
-                if(i.DeliveryManid == deliverymanid)
+                if(i.Deliveryman_id == deliverymanid)
                 {
                     id = i.Id;
                 }
@@ -189,7 +189,11 @@ namespace DeliveryWolt.Controllers
             List<Package> packagesincity = new List<Package>();
             List<Package> personal = new List<Package>();
             PackageController packageController = new PackageController();
-            packageController.getPackages(1);
+            if(id > 0)
+            {
+              personal = packageController.getPackages(id);
+            }
+            
             // reikia ideti kad grazintu abu kaip atskirus listus
             packagesincity = viewAvaibalePackageListinCity();
             return showPackagesInfo(packagesincity,personal);
