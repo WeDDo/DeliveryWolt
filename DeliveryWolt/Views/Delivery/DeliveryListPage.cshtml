@@ -1,8 +1,11 @@
 ﻿@using DeliveryWolt.Models
 @model dynamic
+
 @{
     ViewBag.Title = "DeliveryListPage";
 }
+
+
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -10,57 +13,147 @@
     <title>DeliveryListPage</title>
 </head>
 <body>
-    @foreach (Delivery item in Model.deliveries)
-    {
-        <div>
+    <div>
+        <dl class="dl-horizontal">
+            @foreach (Delivery delivery in Model.delivery)
+            {
+                <dt>
+                    @Html.DisplayNameFor(model => delivery.Id)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => delivery.Id)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => delivery.Cost)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => delivery.Cost)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => delivery.TotalDistance)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => delivery.TotalDistance)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => delivery.Deliveryman_id)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => delivery.Deliveryman_id)
+                </dd>
+            }
+        </dl>
+
+        @foreach (Package package in Model.packages)
+        {
             <dl class="dl-horizontal">
                 <dt>
-                    @Html.DisplayNameFor(model => item.Id)
+                    @Html.DisplayNameFor(model => package.Id)
                 </dt>
 
                 <dd>
-                    @Html.DisplayFor(model => item.Id)
+                    @Html.DisplayFor(model => package.Id)
                 </dd>
 
                 <dt>
-                    @Html.DisplayNameFor(model => item.Cost)
+                    @Html.DisplayNameFor(model => package.Dimensions)
                 </dt>
 
                 <dd>
-                    @Html.DisplayFor(model => item.Cost)
+                    @Html.DisplayFor(model => package.Dimensions)
                 </dd>
 
                 <dt>
-                    @Html.DisplayNameFor(model => item.TotalDistance)
+                    @Html.DisplayNameFor(model => package.Weight)
                 </dt>
 
                 <dd>
-                    @Html.DisplayFor(model => item.TotalDistance)
+                    @Html.DisplayFor(model => package.Weight)
                 </dd>
 
-                @*<dt>
-                    @Html.DisplayNameFor(model => item.packages)
+                <dt>
+                    @Html.DisplayNameFor(model => package.Due)
                 </dt>
-                @foreach (var package in item.packages)
-                {
-                    <dd>
-                        Id: @Html.DisplayFor(model => package.Id)<br />
-                        Dimensions: @Html.DisplayFor(model => package.Dimensions)<br />
-                        Weight: @Html.DisplayFor(model => package.Weight)<br />
-                        Due: @Html.DisplayFor(model => package.Due)<br />
-                        Adress: @Html.DisplayFor(model => package.Address)<br />
-                        Status: @Html.DisplayFor(model => package.Status)<br />
-                        Cost modifier: @Html.DisplayFor(model => package.CostModifier)<br />
-                        Priority: @Html.DisplayFor(model => package.Priority)<br />
-                        Waregouse id: @Html.DisplayFor(model => package.Warehouse_id)<br />
-                    </dd>
-                    <br />
-                }
-                <hr />*@
+
+                <dd>
+                    @Html.DisplayFor(model => package.Due)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => package.Address)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => package.Address)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => package.Status)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => package.Status)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => package.CostModifier)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => package.CostModifier)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => package.Priority)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => package.Priority)
+                </dd>
+                <dt>
+                    @Html.DisplayNameFor(model => package.City)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => package.City)
+                </dd>
+                <dt>
+                    @Html.DisplayNameFor(model => package.Warehouse_id)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => package.Warehouse_id)
+                </dd>
+                <dt>
+                    @Html.DisplayNameFor(model => package.Delivery_id)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => package.Delivery_id)
+                </dd>
             </dl>
-        </div>
-    }
+            //@Html.ActionLink("Change State", "changeState", new { id = package.Id })
+            //<a href="/Package/changeState?did=@package.Id">Change package state</a>
 
+            var options = new SelectList(package.getStatuses());
+
+            Html.BeginForm("changeState", "Delivery");
+            
+                <input type="hidden" id="id" name="id" value="@package.Id" />
+                @Html.DropDownList("dropdown", options, new { onChange = "this.form.submit()" });
+
+            Html.EndForm();
+
+
+        }
+    </div>
 </body>
 </html>
 

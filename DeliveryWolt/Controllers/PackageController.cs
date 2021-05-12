@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -251,9 +252,11 @@ namespace DeliveryWolt.Controllers
                             reader.GetString(5),
                             reader.GetDouble(6),
                             reader.GetBoolean(7),
-                            Convert.ToInt32(reader.GetString(8))
+                            reader.GetString(8),
+                            Convert.ToInt32(reader.GetString(9)),
+                            Convert.ToInt32(reader.GetString(10))
                         ));
-                       
+
                     }
                 }
                 else
@@ -270,7 +273,7 @@ namespace DeliveryWolt.Controllers
             }
             return PackageList;
         }
-       
+
         // POST: Delivery/Edit/5
         [HttpPost]
         public ActionResult Edit(Package pack)
@@ -299,24 +302,89 @@ namespace DeliveryWolt.Controllers
             }
             return RedirectToAction("Index");
         }
+        //-------------------------------------------------------------------------------------
+        
 
 
         //-------------------------------------------------------------------------------------
 
-        public void getPackages()
+        public List<Package> getPackages(int delivery_id)
         {
+            DataTable table = new DataTable();
+            List<Package> packages = new List<Package>();
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = String.Format("SELECT * FROM package WHERE delivery_id={0}", delivery_id);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
+            cmd.CommandTimeout = 60;
+            databaseConnection.Open();
+            MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
+            adapter.Fill(table);
+            if (table.Rows.Count > 0)
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    int del_id;
+                    if (row[9] == "")
+                    {
+                        del_id = 0;
+                    }
+                    else
+                    {
+                        del_id = (int)row[9];
+                    }
+
+                    int war_id;
+                    if (row[10] == "")
+                    {
+                        war_id = 0;
+                    }
+                    else
+                    {
+                        war_id = (int)row[10];
+                    }
+                    packages.Add(
+                        new Package(
+                            (int) row[0],
+                            (string)row[1],
+                            (double)row[2],
+                            (DateTime)row[3], 
+                            (string)row[4],
+                            (string)row[5],
+                            (double)row[6],
+                            (bool)row[7],
+                            (string)row[8],
+                            del_id,
+                            war_id));
+                }
+            }
+            else
+            {
+                return null;
+            }
+            databaseConnection.Close();
+
+            return packages;
 
         }
 
         //-------------------------------------------------------------------------------------
-        public void changeState()
+        public void changeState(int id, string state)
         {
-
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = String.Format("UPDATE package SET status = \"{0}\" WHERE id = {1}", state, id);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
+            cmd.CommandTimeout = 60;
+            databaseConnection.Open();
+            cmd.ExecuteNonQuery();
+            databaseConnection.Close();
         }
+
         //-------------------------------------------------------------------------------------
         public void removePackage()
         {
-
+            
         }
         //-------------------------------------------------------------------------------------
         public int getRegionsPackageAmount()

@@ -11,6 +11,7 @@ namespace DeliveryWolt.Models
         public double Cost { get; set; }
         public double TotalDistance { get; set; }
         public bool Displayed { get; set; }
+        public int Deliveryman_id { get; set; }
 
         public List<Package> packages;
 
@@ -24,12 +25,13 @@ namespace DeliveryWolt.Models
             this.packages = packages;
         }
 
-        public Delivery(int id, double cost, double totalDistance, bool displayed)
+        public Delivery(int id, double cost, double totalDistance, bool displayed, int deliveryman_id)
         {
             Id = id;
             Cost = cost;
             TotalDistance = totalDistance;
             Displayed = displayed;
+            Deliveryman_id = deliveryman_id;
         }
     }
 }
