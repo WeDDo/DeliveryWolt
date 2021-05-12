@@ -179,6 +179,7 @@
     <Content Include="Views\Delivery\DeliveryManPage.cshtml" />
     <Content Include="Views\Delivery\DeliveryListPage.cshtml" />
     <Content Include="Views\Delivery\ManualDeliveryPage.cshtml" />
+    <Content Include="Views\Delivery\ChangePackageState.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
