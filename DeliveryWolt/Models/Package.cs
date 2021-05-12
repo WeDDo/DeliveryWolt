@@ -15,14 +15,18 @@ namespace DeliveryWolt.Models
         public String Status { get; set; }
         public double CostModifier { get; set; }
         public bool Priority { get; set; }
+        public String City { get; set; }
         public int Warehouse_id { get; set; }
+
+        public int Delivery_id { get; set; }
+        
 
         public Package()
         {
 
         }
 
-        public Package(int id, string dimensions, double weight, DateTime due, string address, string status, double costModifier, bool priority,int warehouse_id)
+        public Package(int id, string dimensions, double weight, DateTime due, string address, string status, double costModifier, bool priority, string city, int warehouse_id,int delivery_id)
         {
             Id = id;
             Dimensions = dimensions;
@@ -33,6 +37,8 @@ namespace DeliveryWolt.Models
             CostModifier = costModifier;
             Priority = priority;
             Warehouse_id = warehouse_id;
+            City = city;
+            Delivery_id = delivery_id;
 
         }
 

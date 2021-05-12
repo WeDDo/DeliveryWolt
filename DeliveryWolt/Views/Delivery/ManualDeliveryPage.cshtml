@@ -1,9 +1,151 @@
-﻿
+﻿@using DeliveryWolt.Models
+@model dynamic
 @{
     ViewBag.Title = "ManualDeliveryPage";
 }
 
 <h2>ManualDeliveryPage</h2>
+<table class="table">
+    <tr>
+        <th>
+            Id
+        </th>
+        <th>
+            Dimensions
+        </th>
+        <th>
+            Weight
+        </th>
+        <th>
+            Due
+        </th>
+        <th>
+            Address
+        </th>
+        <th>
+            Status
+        </th>
+        <th>
+            Cost Modifier
+        </th>
+        <th>
+            Priority
+        </th>
+        <th>
+            City
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (Package item in Model.packages)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Dimensions)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Weight)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Due)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Address)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CostModifier)
+            </td>
+            <th>
+                @Html.DisplayFor(modelItem => item.Priority)
+            </th>
+            <td>
+                @Html.DisplayFor(modelItem => item.City)
+            </td>
+            <td>
+                @Html.ActionLink("Save", "changeState", new { id = item.Id })
+            </td>
+        </tr>
+    }
+
+
+</table>
+<table class="table">
+    <tr>
+        <th>
+            Id
+        </th>
+        <th>
+            Dimensions
+        </th>
+        <th>
+            Weight
+        </th>
+        <th>
+            Due
+        </th>
+        <th>
+            Address
+        </th>
+        <th>
+            Status
+        </th>
+        <th>
+            Cost Modifier
+        </th>
+        <th>
+            Priority
+        </th>
+        <th>
+            City
+        </th>
+        <th></th>
+    </tr>
+    
+    @foreach (Package item in Model.personalpackages)
+    {
+<tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.Id)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Dimensions)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Weight)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Due)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Address)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Status)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.CostModifier)
+    </td>
+    <th>
+        @Html.DisplayFor(modelItem => item.Priority)
+    </th>
+    <td>
+        @Html.DisplayFor(modelItem => item.City)
+    </td>
+    <td>
+        @Html.ActionLink("Save", "changeState", new { id = item.Id })
+    </td>
+</tr>
+    }
+
+</table>
+
+
 
 <li>@Html.ActionLink("Add package to personal delivery list", "ViewPersonalDeliveryList", "Delivery")</li>
 <li>@Html.ActionLink("Remove packages from manual delivery list", "CreateManualDeliveryList", "Delivery")</li>

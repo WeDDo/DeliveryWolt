@@ -12,16 +12,16 @@ namespace DeliveryWolt.Models
         public double TotalDistance { get; set; }
         public bool Displayed { get; set; }
 
-        public List<Package> packages;
+        public int DeliveryManid { get; set; }
 
         public Delivery() { }
-        public Delivery(int id, double cost, double totalDistance, bool displayed, List<Package> packages)
+        public Delivery(int id, double cost, double totalDistance, bool displayed, int i)
         {
             Id = id;
             Cost = cost;
             TotalDistance = totalDistance;
             Displayed = displayed;
-            this.packages = packages;
+            DeliveryManid = i;
         }
 
         public Delivery(int id, double cost, double totalDistance, bool displayed)
