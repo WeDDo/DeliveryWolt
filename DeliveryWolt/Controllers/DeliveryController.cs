@@ -52,13 +52,8 @@ namespace DeliveryWolt.Controllers
             }
             else
             {
-                //DataRow row = table.Rows[0];
-                //Delivery delivery = new Delivery((int)row[0], (double)row[1], (double)row[2], (bool)row[3], (int)row[4]);
-                //databaseConnection.Close();
                 return null;
-
             }
-
         }
 
         public ActionResult displayDeliveryPage(Delivery delivery, List<Package> packages)
@@ -70,6 +65,8 @@ namespace DeliveryWolt.Controllers
             model.packages = packages;
             return View("DeliveryListPage", model);
         }
+
+
 
         //-------------------------------------------------------------------------------------
 
@@ -97,6 +94,16 @@ namespace DeliveryWolt.Controllers
 
 
         //-------------------------------------------------------------------------------------
+
+        public ActionResult removePackage(int id)
+        {
+            PackageController controller = new PackageController();
+            controller.updateStatus(id, "available", null);
+
+            return openDeliveryView();
+        }
+
+
         public ActionResult changeState(int id, string dropdown)
         {
             PackageController packageController = new PackageController();
@@ -104,13 +111,6 @@ namespace DeliveryWolt.Controllers
             return openDeliveryView();
         }
 
-        //-------------------------------------------------------------------------------------
-        [ActionName("RemovePackageFromDelivery")]
-        public void removePackage()
-        {
-            PackageController packageController = new PackageController();
-            packageController.removePackage();
-        }
 
         //-------------------------------------------------------------------------------------
 
