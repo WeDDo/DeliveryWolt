@@ -68,7 +68,7 @@
                 @Html.DisplayFor(modelItem => item.City)
             </td>
             <td>
-                @Html.ActionLink("Save", "changeState", new { id = item.Id })
+                @Html.ActionLink("Add", "addPackageToList",  new { id = item.Id })
             </td>
         </tr>
     }
@@ -138,16 +138,12 @@
         @Html.DisplayFor(modelItem => item.City)
     </td>
     <td>
-        @Html.ActionLink("Save", "changeState", new { id = item.Id })
+        @Html.ActionLink("Remove", "clearDeliveryList", new { id = item.Id })
     </td>
 </tr>
     }
 
 </table>
 
-
-
-<li>@Html.ActionLink("Add package to personal delivery list", "ViewPersonalDeliveryList", "Delivery")</li>
-<li>@Html.ActionLink("Remove packages from manual delivery list", "CreateManualDeliveryList", "Delivery")</li>
 <li>@Html.ActionLink("Change package order", "ViewPersonalDeliveryList", "Delivery")</li>
 <li>@Html.ActionLink("Save manual delivery list", "CreateManualDeliveryList", "Delivery")</li>

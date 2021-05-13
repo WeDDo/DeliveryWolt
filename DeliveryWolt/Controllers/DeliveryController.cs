@@ -142,6 +142,34 @@ namespace DeliveryWolt.Controllers
 
 
         //-------------------------------------------------------------------------------------
+        public ActionResult addPackageToList(int id)
+        {
+            int idworker = 1;
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            // Select all
+            string query = String.Format("UPDATE `package` SET `reserved_by`= '{0}',`status`= 'reserved' WHERE `Id`= '{1}' AND status = '{2}'", idworker, id,"available");
+            System.Diagnostics.Debug.WriteLine(query);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            MySqlDataReader reader;
+
+            try
+            {
+                databaseConnection.Open();
+                reader = commandDatabase.ExecuteReader();
+
+                // Succesfully updated
+
+                databaseConnection.Close();
+            }
+            catch (Exception ex)
+            {
+                // Ops, maybe the id doesn't exists ?
+            }
+            return openManualList();
+        }
+        //------------------------------------------------------------
         [ActionName("CreateNewDelivery")]
         public ActionResult openCreateNewDelivery()
         {
@@ -185,25 +213,12 @@ namespace DeliveryWolt.Controllers
         [ActionName("CreateManualDeliveryList")]
         public ActionResult openManualList()
         {
-            List<Delivery> deliveries = getDeliveries(1);
-            List<Delivery> deliveries = getDeliveries();
-            int deliverymanid = 1;
-            int id = -1;
-            foreach(var i in deliveries)
-            {
-                if(i.Deliveryman_id == deliverymanid)
-                {
-                    id = i.Id;
-                }
-            }
-
+            int id = 1;
             List<Package> packagesincity = new List<Package>();
             List<Package> personal = new List<Package>();
             PackageController packageController = new PackageController();
-            if(id > 0)
-            {
-              personal = packageController.getPackages(id);
-            }
+            personal = packageController.getPackages2(id);
+
             
             // reikia ideti kad grazintu abu kaip atskirus listus
             packagesincity = viewAvaibalePackageListinCity();
@@ -235,10 +250,39 @@ namespace DeliveryWolt.Controllers
         }
 
         //-------------------------------------------------------------------------------------
-        [ActionName("RemovePackagesFromManualDeliveryList")]
-        public void clearDeliveryList()
-        {
 
+        public ActionResult clearDeliveryList(int id)
+        {
+            clearDelivery(id);
+            return openManualList();
+        }
+
+        public void clearDelivery(int id)
+        {
+            int idworker = 1;
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            // Select all
+            string query = String.Format("UPDATE `package` SET `reserved_by`= '0',`status`= 'available' WHERE `Id`= '{0}'", id);
+            System.Diagnostics.Debug.WriteLine(query);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            MySqlDataReader reader;
+
+            try
+            {
+                databaseConnection.Open();
+                reader = commandDatabase.ExecuteReader();
+
+                // Succesfully updated
+
+                databaseConnection.Close();
+            }
+            catch (Exception ex)
+            {
+                // Ops, maybe the id doesn't exists ?
+            }
+         
         }
 
         //-------------------------------------------------------------------------------------

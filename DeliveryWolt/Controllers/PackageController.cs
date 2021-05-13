@@ -370,6 +370,65 @@ namespace DeliveryWolt.Controllers
         }
 
         //-------------------------------------------------------------------------------------
+        public List<Package> getPackages2(int delivery_id)
+        {
+            DataTable table = new DataTable();
+            List<Package> packages = new List<Package>();
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = String.Format("SELECT * FROM package WHERE reserved_by={0}", delivery_id);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
+            cmd.CommandTimeout = 60;
+            databaseConnection.Open();
+            MySqlDataAdapter adapter = new MySqlDataAdapter(cmd);
+            adapter.Fill(table);
+            if (table.Rows.Count > 0)
+            {
+                foreach (DataRow row in table.Rows)
+                {
+                    int del_id;
+                    if (row[9] == "")
+                    {
+                        del_id = 0;
+                    }
+                    else
+                    {
+                        del_id = (int)row[9];
+                    }
+
+                    int war_id;
+                    if (row[10] == "")
+                    {
+                        war_id = 0;
+                    }
+                    else
+                    {
+                        war_id = (int)row[10];
+                    }
+                    packages.Add(
+                        new Package(
+                            (int)row[0],
+                            (string)row[1],
+                            (double)row[2],
+                            (DateTime)row[3],
+                            (string)row[4],
+                            (string)row[5],
+                            (double)row[6],
+                            (bool)row[7],
+                            (string)row[8],
+                            del_id,
+                            war_id));
+                }
+            }
+            else
+            {
+                return packages;
+            }
+            databaseConnection.Close();
+
+            return packages;
+        }
+
         public void changeState(int id, string status)
         {
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
@@ -416,7 +475,7 @@ namespace DeliveryWolt.Controllers
 
         //-------------------------------------------------------------------------------------
 
-
+        //------------------------------------------------------------
         public List<Package> getAvailablePackages(string name)
         {
             List<Package> PackageList = new List<Package>() { };
@@ -424,7 +483,7 @@ namespace DeliveryWolt.Controllers
 
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
             // Select all
-            string query = String.Format("SELECT * FROM package WHERE city = \"{0}\" ", name);
+            string query = String.Format("SELECT * FROM package WHERE city = \"{0}\" AND status = \"available\"", name);
 
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
