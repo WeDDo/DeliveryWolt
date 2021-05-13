@@ -428,11 +428,11 @@ namespace DeliveryWolt.Controllers
 
             return packages;
         }
-        //-------------------------------------------------------------------------------------
-        public void changeState(int id, string state)
+
+        public void changeState(int id, string status)
         {
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            string query = String.Format("UPDATE package SET status = \"{0}\" WHERE id = {1}", state, id);
+            string query = String.Format("UPDATE package SET status = \"{0}\" WHERE id = {1}", status, id);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
             cmd.CommandTimeout = 60;
@@ -442,10 +442,28 @@ namespace DeliveryWolt.Controllers
         }
 
         //-------------------------------------------------------------------------------------
-        public void removePackage()
+        public void updateStatus(int id, string status, int? delivery_id)
         {
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = "";
+            if (delivery_id == null)
+            {
+                query = String.Format("UPDATE package SET status = \"{0}\", delivery_id = NULL WHERE id = {1}", status, id);
+            }
+            else
+            {
+                query = String.Format("UPDATE package SET status = \"{0}\", delivery_id = {2} WHERE id = {1}", status, id, delivery_id);
+            }
             
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
+            cmd.CommandTimeout = 60;
+            databaseConnection.Open();
+            cmd.ExecuteNonQuery();
+            
+            databaseConnection.Close();
         }
+
         //-------------------------------------------------------------------------------------
         public int getRegionsPackageAmount()
         {
