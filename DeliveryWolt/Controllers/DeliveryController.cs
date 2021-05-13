@@ -176,24 +176,44 @@ namespace DeliveryWolt.Controllers
         public ActionResult openManualList()
         {
             List<Delivery> deliveries = getDeliveries();
+            int deliverymanid = 1;
+            int id = -1;
+            foreach(var i in deliveries)
+            {
+                if(i.Deliveryman_id == deliverymanid)
+                {
+                    id = i.Id;
+                }
+            }
+
+            List<Package> packagesincity = new List<Package>();
+            List<Package> personal = new List<Package>();
             PackageController packageController = new PackageController();
-            packageController.getPackages(1);
+            if(id > 0)
+            {
+              personal = packageController.getPackages(id);
+            }
+            
             // reikia ideti kad grazintu abu kaip atskirus listus
-            viewAvaibalePackageListinCity();
-            return showPackagesInfo(deliveries);
+            packagesincity = viewAvaibalePackageListinCity();
+            return showPackagesInfo(packagesincity,personal);
         }
 
-        public void viewAvaibalePackageListinCity()
+        public List<Package> viewAvaibalePackageListinCity()
         {
             PackageController packageController = new PackageController();
-            packageController.getAvailablePackages();
-
+            List<Package> packages = new List<Package>();
+            packages = packageController.getAvailablePackages("Kaunas");
+            return packages;
         }
 
 
-        public ActionResult showPackagesInfo(List<Delivery> deliveries)
+        public ActionResult showPackagesInfo(List<Package> packages,List<Package> personal)
         {
-            return View("ManualDeliveryPage", deliveries[0]);
+            dynamic model = new ExpandoObject();
+            model.packages = packages;
+            model.personalpackages = personal;
+            return View("ManualDeliveryPage", model);
         }
 
         //-------------------------------------------------------------------------------------
