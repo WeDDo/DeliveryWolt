@@ -19,6 +19,7 @@ namespace DeliveryWolt.Models
         public int Warehouse_id { get; set; }
         public int Delivery_id { get; set; }
         
+        
 
         public Package()
         {
@@ -38,6 +39,7 @@ namespace DeliveryWolt.Models
             City = city;
             Warehouse_id = warehouse_id;
             Delivery_id = delivery_id;
+
         }
 
         public List<string> Statuses = new List<string>()

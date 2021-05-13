@@ -52,13 +52,8 @@ namespace DeliveryWolt.Controllers
             }
             else
             {
-                //DataRow row = table.Rows[0];
-                //Delivery delivery = new Delivery((int)row[0], (double)row[1], (double)row[2], (bool)row[3], (int)row[4]);
-                //databaseConnection.Close();
                 return null;
-
             }
-
         }
 
         public ActionResult displayDeliveryPage(Delivery delivery, List<Package> packages)
@@ -71,6 +66,8 @@ namespace DeliveryWolt.Controllers
             model.viewDel = "ViewDelivery";
             return View("DeliveryListPage", model);
         }
+
+
 
         //-------------------------------------------------------------------------------------
 
@@ -98,6 +95,16 @@ namespace DeliveryWolt.Controllers
 
 
         //-------------------------------------------------------------------------------------
+
+        public ActionResult removePackage(int id)
+        {
+            PackageController controller = new PackageController();
+            controller.updateStatus(id, "available", null);
+
+            return openDeliveryView();
+        }
+
+
         public ActionResult changeState(int id, string dropdown)
         {
             PackageController packageController = new PackageController();
@@ -105,13 +112,6 @@ namespace DeliveryWolt.Controllers
             return openDeliveryView();
         }
 
-        //-------------------------------------------------------------------------------------
-        [ActionName("RemovePackageFromDelivery")]
-        public void removePackage()
-        {
-            PackageController packageController = new PackageController();
-            packageController.removePackage();
-        }
 
         //-------------------------------------------------------------------------------------
 
@@ -186,24 +186,45 @@ namespace DeliveryWolt.Controllers
         public ActionResult openManualList()
         {
             List<Delivery> deliveries = getDeliveries(1);
+            List<Delivery> deliveries = getDeliveries();
+            int deliverymanid = 1;
+            int id = -1;
+            foreach(var i in deliveries)
+            {
+                if(i.Deliveryman_id == deliverymanid)
+                {
+                    id = i.Id;
+                }
+            }
+
+            List<Package> packagesincity = new List<Package>();
+            List<Package> personal = new List<Package>();
             PackageController packageController = new PackageController();
-            packageController.getPackages(1);
+            if(id > 0)
+            {
+              personal = packageController.getPackages(id);
+            }
+            
             // reikia ideti kad grazintu abu kaip atskirus listus
-            viewAvaibalePackageListinCity();
-            return showPackagesInfo(deliveries);
+            packagesincity = viewAvaibalePackageListinCity();
+            return showPackagesInfo(packagesincity,personal);
         }
 
-        public void viewAvaibalePackageListinCity()
+        public List<Package> viewAvaibalePackageListinCity()
         {
             PackageController packageController = new PackageController();
-            packageController.getAvailablePackages();
-
+            List<Package> packages = new List<Package>();
+            packages = packageController.getAvailablePackages("Kaunas");
+            return packages;
         }
 
 
-        public ActionResult showPackagesInfo(List<Delivery> deliveries)
+        public ActionResult showPackagesInfo(List<Package> packages,List<Package> personal)
         {
-            return View("ManualDeliveryPage", deliveries[0]);
+            dynamic model = new ExpandoObject();
+            model.packages = packages;
+            model.personalpackages = personal;
+            return View("ManualDeliveryPage", model);
         }
 
         //-------------------------------------------------------------------------------------

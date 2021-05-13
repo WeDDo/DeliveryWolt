@@ -308,6 +308,8 @@ namespace DeliveryWolt.Controllers
 
         //-------------------------------------------------------------------------------------
 
+
+
         public List<Package> getPackages(int delivery_id)
         {
             DataTable table = new DataTable();
@@ -365,14 +367,13 @@ namespace DeliveryWolt.Controllers
             databaseConnection.Close();
 
             return packages;
-
         }
 
         //-------------------------------------------------------------------------------------
-        public void changeState(int id, string state)
+        public void changeState(int id, string status)
         {
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            string query = String.Format("UPDATE package SET status = \"{0}\" WHERE id = {1}", state, id);
+            string query = String.Format("UPDATE package SET status = \"{0}\" WHERE id = {1}", status, id);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
             cmd.CommandTimeout = 60;
@@ -382,10 +383,28 @@ namespace DeliveryWolt.Controllers
         }
 
         //-------------------------------------------------------------------------------------
-        public void removePackage()
+        public void updateStatus(int id, string status, int? delivery_id)
         {
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = "";
+            if (delivery_id == null)
+            {
+                query = String.Format("UPDATE package SET status = \"{0}\", delivery_id = NULL WHERE id = {1}", status, id);
+            }
+            else
+            {
+                query = String.Format("UPDATE package SET status = \"{0}\", delivery_id = {2} WHERE id = {1}", status, id, delivery_id);
+            }
             
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
+            cmd.CommandTimeout = 60;
+            databaseConnection.Open();
+            cmd.ExecuteNonQuery();
+            
+            databaseConnection.Close();
         }
+
         //-------------------------------------------------------------------------------------
         public int getRegionsPackageAmount()
         {
@@ -398,12 +417,64 @@ namespace DeliveryWolt.Controllers
         //-------------------------------------------------------------------------------------
 
 
-        public void getAvailablePackages()
+        public List<Package> getAvailablePackages(string name)
         {
+            List<Package> PackageList = new List<Package>() { };
+            ViewBag.ItemList = "Package Page";
 
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            // Select all
+            string query = String.Format("SELECT * FROM package WHERE city = \"{0}\" ", name);
+
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            MySqlDataReader reader;
+
+            try
+            {
+                databaseConnection.Open();
+                reader = commandDatabase.ExecuteReader();
+                // Success, now list 
+
+                // If there are available rows
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        PackageList.Add(new Package(
+                            Convert.ToInt32(reader.GetString(0)),
+                            reader.GetString(1),
+                            reader.GetDouble(2),
+                            reader.GetDateTime(3),
+                            reader.GetString(4),
+                            reader.GetString(5),
+                            reader.GetDouble(6),
+                            reader.GetBoolean(7),
+                            reader.GetString(8),
+                            Convert.ToInt32(reader.GetString(9)),
+                            Convert.ToInt32(reader.GetString(10))
+                        ));
+
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No rows found.");
+                }
+
+                databaseConnection.Close();
+            }
+            catch (Exception ex)
+
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+            return PackageList;
         }
 
         //-------------------------------------------------------------------------------------
     }
+    
 }
 
