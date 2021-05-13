@@ -18,15 +18,16 @@ namespace DeliveryWolt.Models
         public string City { get; set; }
         public int Warehouse_id { get; set; }
         public int Delivery_id { get; set; }
-        
-        
+        public int Order_by { get; set; }
+
+
 
         public Package()
         {
 
         }
 
-        public Package(int id, string dimensions, double weight, DateTime due, string address, string status, double costModifier, bool priority, string city, int warehouse_id, int delivery_id)
+        public Package(int id, string dimensions, double weight, DateTime due, string address, string status, double costModifier, bool priority, string city, int warehouse_id, int delivery_id, int order_by)
         {
             Id = id;
             Dimensions = dimensions;
@@ -39,7 +40,7 @@ namespace DeliveryWolt.Models
             City = city;
             Warehouse_id = warehouse_id;
             Delivery_id = delivery_id;
-
+            Order_by = order_by;
         }
 
         public List<string> Statuses = new List<string>()

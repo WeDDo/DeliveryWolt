@@ -68,7 +68,7 @@
                 @Html.DisplayFor(modelItem => item.City)
             </td>
             <td>
-                @Html.ActionLink("Add", "addPackageToList",  new { id = item.Id })
+                @Html.ActionLink("Add", "addPackageToList",  new { id = item.Id, order = @Model.personalpackages.Count })
             </td>
         </tr>
     }
@@ -77,6 +77,9 @@
 </table>
 <table class="table">
     <tr>
+        <th>
+            Nr.
+        </th>
         <th>
             Id
         </th>
@@ -106,10 +109,14 @@
         </th>
         <th></th>
     </tr>
+
     
     @foreach (Package item in Model.personalpackages)
     {
 <tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.Order_by)
+    </td>
     <td>
         @Html.DisplayFor(modelItem => item.Id)
     </td>
@@ -138,12 +145,25 @@
         @Html.DisplayFor(modelItem => item.City)
     </td>
     <td>
-        @Html.ActionLink("Remove", "clearDeliveryList", new { id = item.Id })
+        @Html.ActionLink("Remove", "clearDeliveryList", new { id = item.Id, order = item.Order_by, res_by = 1 })
     </td>
+
+    @if (@Model.personalpackages.Count > 1)
+    {
+    <td>
+        @if (item.Order_by > 1)
+        {
+            @Html.ActionLink("^", "movePackage", new { wh = -1, id = item.Id, res_by = 1, order = item.Order_by })
+        }
+        @if (item.Order_by < @Model.personalpackages.Count)
+        {
+        @Html.ActionLink("v", "movePackage", new { wh = 1, id = item.Id, res_by = 1, order = item.Order_by })
+        }
+    </td>
+    }
 </tr>
     }
 
 </table>
 
-<li>@Html.ActionLink("Change package order", "ViewPersonalDeliveryList", "Delivery")</li>
-<li>@Html.ActionLink("Save manual delivery list", "CreateManualDeliveryList", "Delivery")</li>
+<li>@Html.ActionLink("SAVE", "CreateManualDeliveryList", "Delivery")</li>

@@ -142,12 +142,12 @@ namespace DeliveryWolt.Controllers
 
 
         //-------------------------------------------------------------------------------------
-        public ActionResult addPackageToList(int id)
+        public ActionResult addPackageToList(int id, int order)
         {
             int idworker = 1;
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
             // Select all
-            string query = String.Format("UPDATE `package` SET `reserved_by`= '{0}',`status`= 'reserved' WHERE `Id`= '{1}' AND status = '{2}'", idworker, id,"available");
+            string query = String.Format("UPDATE `package` SET `reserved_by`= '{0}',`status`= 'reserved', order_by = {3} WHERE `Id`= '{1}' AND status = '{2}'", idworker, id,"available", order+1);
             System.Diagnostics.Debug.WriteLine(query);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
@@ -251,18 +251,18 @@ namespace DeliveryWolt.Controllers
 
         //-------------------------------------------------------------------------------------
 
-        public ActionResult clearDeliveryList(int id)
+        public ActionResult clearDeliveryList(int id, int order, int res_by)
         {
-            clearDelivery(id);
+            clearDelivery(id, order, res_by);
             return openManualList();
         }
 
-        public void clearDelivery(int id)
+        public void clearDelivery(int id, int order, int res_by)
         {
             int idworker = 1;
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
             // Select all
-            string query = String.Format("UPDATE `package` SET `reserved_by`= '0',`status`= 'available' WHERE `Id`= '{0}'", id);
+            string query = String.Format("UPDATE `package` SET `order_by` = `order_by`-1 WHERE `order_by` > '{1}' AND `reserved_by`= '{2}'; UPDATE `package` SET `reserved_by`= '0',`status`= 'available' WHERE `Id`= '{0}'", id, order, res_by);
             System.Diagnostics.Debug.WriteLine(query);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
@@ -282,14 +282,44 @@ namespace DeliveryWolt.Controllers
             {
                 // Ops, maybe the id doesn't exists ?
             }
-         
+
+
         }
 
         //-------------------------------------------------------------------------------------
-        [ActionName("ChangePackageOrder")]
-        public void movePackage()
+        public ActionResult movePackage(int wh, int id, int res_by, int order)
         {
+            changePackageOrder(wh, id, res_by, order);
+            return openManualList();
+        }
 
+        public void changePackageOrder(int wh, int id, int res_by, int order)
+        {
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            // Select all
+            int order_new = order + wh;
+
+
+            string query = String.Format("UPDATE `package` SET `order_by` = '{0}' WHERE `order_by` = '{1}' AND `reserved_by`= '{2}'; UPDATE `package` SET `order_by` = '{1}' WHERE `Id`= '{3}'", order, order_new, res_by, id);
+            System.Diagnostics.Debug.WriteLine(query);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            MySqlDataReader reader;
+
+            try
+            {
+                databaseConnection.Open();
+                reader = commandDatabase.ExecuteReader();
+
+                // Succesfully updated
+
+                databaseConnection.Close();
+            }
+            catch (Exception ex)
+            {
+                // Ops, maybe the id doesn't exists ?
+            }
         }
 
         //-------------------------------------------------------------------------------------

@@ -167,13 +167,8 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\Package\Index.cshtml" />
-    <Content Include="Views\Package\Edit.cshtml" />
-    <Content Include="Views\Package\Add.cshtml" />
-    <Content Include="Views\Package\Details.cshtml" />
     <Content Include="Views\WHM\index.cshtml" />
     <Content Include="Views\WHM\PackageList.cshtml" />
-    <Content Include="Views\Package\changeState.cshtml" />
     <Content Include="Views\WHM\registerPackage.cshtml" />
     <Content Include="Views\WHM\changeState.cshtml" />
     <Content Include="Views\Delivery\DeliveryManPage.cshtml" />
