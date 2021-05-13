@@ -68,17 +68,18 @@ namespace DeliveryWolt.Controllers
             del.Add(delivery);
             model.delivery = del;
             model.packages = packages;
+            model.viewDel = "ViewDelivery";
             return View("DeliveryListPage", model);
         }
 
         //-------------------------------------------------------------------------------------
 
-        public List<Delivery> getDeliveries()
+        public List<Delivery> getDeliveries(int deliveryman_id)
         {
             DataTable table = new DataTable();
-            List<Delivery> deliveries = new List<Delivery>();
+            List<Delivery> delivery = new List<Delivery>();
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            string query = String.Format("SELECT * FROM delivery");
+            string query = String.Format("SELECT * FROM delivery WHERE deliveryman_id={0} ORDER BY id DESC LIMIT 1", deliveryman_id);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
             cmd.CommandTimeout = 60;
@@ -88,10 +89,10 @@ namespace DeliveryWolt.Controllers
             adapter.Fill(table);
             foreach (DataRow row in table.Rows)
             {
-                deliveries.Add(new Delivery((int)row[0], (double)row[1], (double)row[2], (bool)row[3], (int)row[0]));
+                delivery.Add(new Delivery((int)row[0], (double)row[1], (double)row[2], (bool)row[3], (int)row[4]));
             }
             databaseConnection.Close();
-            return deliveries;
+            return delivery;
         }
 
 
@@ -117,19 +118,26 @@ namespace DeliveryWolt.Controllers
         [ActionName("ViewPersonalDeliveryList")]
         public ActionResult openPersonalDeliveryView()
         {
-            List<Delivery> deliveries = getDeliveries();
-            PackageController packageController = new PackageController();
-            packageController.getPackages(1);
+            List<Delivery> deliveries = getDeliveries(1);
+            PackageController package = new PackageController();
 
-            // drawDeliveryRoute method
+            List<Package> packages = package.getPackages(deliveries[0].Id);
+
+
+            //drawDeliveryRoute method
             //displayDeliveryPage(deliveries);
 
-            return openPersonalDeliveryListPage(deliveries);
+            return openPersonalDeliveryListPage(deliveries, packages);
         }
 
-        public ActionResult openPersonalDeliveryListPage(List<Delivery> deliveries)
+        public ActionResult openPersonalDeliveryListPage(List<Delivery> deliveries, List<Package> packages)
         {
-            return View("DeliveryListPage", deliveries[0]);
+
+            dynamic model = new ExpandoObject();
+            model.delivery = deliveries;
+            model.packages = packages;
+            model.viewDel = "ViewPersonalDeliveryList";
+            return View("DeliveryListPage", model);
         }
 
 
@@ -137,14 +145,16 @@ namespace DeliveryWolt.Controllers
         [ActionName("CreateNewDelivery")]
         public ActionResult openCreateNewDelivery()
         {
-            List<Delivery> deliveries = getDeliveries();
+            List<Delivery> deliveries = getDeliveries(1);
             PackageController packageController = new PackageController();
             packageController.getPackages(1);
+            PackageController package = new PackageController();
 
+            List<Package> packages = package.getPackages(deliveries[0].Id);
             // drawDeliveryRoute method
             //displayDeliveryPage(deliveries);
 
-            return openPersonalDeliveryListPage(deliveries);
+            return openPersonalDeliveryListPage(deliveries, packages);
         }
 
         public void getRegionsPackageAmount()
@@ -175,7 +185,7 @@ namespace DeliveryWolt.Controllers
         [ActionName("CreateManualDeliveryList")]
         public ActionResult openManualList()
         {
-            List<Delivery> deliveries = getDeliveries();
+            List<Delivery> deliveries = getDeliveries(1);
             PackageController packageController = new PackageController();
             packageController.getPackages(1);
             // reikia ideti kad grazintu abu kaip atskirus listus

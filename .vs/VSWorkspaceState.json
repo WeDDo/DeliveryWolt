@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\DeliveryWolt"
   ],
-  "SelectedNode": "\\DeliveryWolt.sln",
+  "SelectedNode": "\\DeliveryWolt\\DeliveryWolt.csproj.user",
   "PreviewInSolutionExplorer": false
 }
