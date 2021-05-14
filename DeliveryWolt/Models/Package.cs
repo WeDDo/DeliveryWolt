@@ -21,7 +21,6 @@ namespace DeliveryWolt.Models
         public int Order_by { get; set; }
 
 
-
         public Package()
         {
 

@@ -76,7 +76,7 @@ namespace DeliveryWolt.Controllers
             DataTable table = new DataTable();
             List<Delivery> delivery = new List<Delivery>();
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            string query = String.Format("SELECT * FROM delivery WHERE deliveryman_id={0} ORDER BY id DESC LIMIT 1", deliveryman_id);
+            string query = String.Format("SELECT * FROM delivery WHERE deliveryman_id={0} ORDER BY id", deliveryman_id);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
             cmd.CommandTimeout = 60;
@@ -121,7 +121,16 @@ namespace DeliveryWolt.Controllers
             List<Delivery> deliveries = getDeliveries(1);
             PackageController package = new PackageController();
 
-            List<Package> packages = package.getPackages(deliveries[0].Id);
+            List<Package> packages = new List<Package>();
+
+            foreach (Delivery del in deliveries)
+            {
+                List<Package> pack = package.getPackages(del.Id);
+                foreach (Package pk in pack)
+                {
+                    packages.Add(pk);
+                }
+            }
 
 
             //drawDeliveryRoute method
@@ -147,7 +156,7 @@ namespace DeliveryWolt.Controllers
             int idworker = 1;
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
             // Select all
-            string query = String.Format("UPDATE `package` SET `reserved_by`= '{0}',`status`= 'reserved', order_by = {3} WHERE `Id`= '{1}' AND status = '{2}'", idworker, id,"available", order+1);
+            string query = String.Format("UPDATE `package` SET `reserved_by`= '{0}',`status`= 'reserved', order_by = {3} WHERE `Id`= '{1}' AND status = '{2}'", idworker, id, "available", order + 1);
             System.Diagnostics.Debug.WriteLine(query);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
@@ -219,10 +228,10 @@ namespace DeliveryWolt.Controllers
             PackageController packageController = new PackageController();
             personal = packageController.getPackages2(id);
 
-            
+
             // reikia ideti kad grazintu abu kaip atskirus listus
             packagesincity = viewAvaibalePackageListinCity();
-            return showPackagesInfo(packagesincity,personal);
+            return showPackagesInfo(packagesincity, personal);
         }
 
         public List<Package> viewAvaibalePackageListinCity()
@@ -234,7 +243,7 @@ namespace DeliveryWolt.Controllers
         }
 
 
-        public ActionResult showPackagesInfo(List<Package> packages,List<Package> personal)
+        public ActionResult showPackagesInfo(List<Package> packages, List<Package> personal)
         {
             dynamic model = new ExpandoObject();
             model.packages = packages;
@@ -245,7 +254,7 @@ namespace DeliveryWolt.Controllers
         //-------------------------------------------------------------------------------------
         [ActionName("AddPackageToPersonalDeliveryList")]
         public void addPackageToList()
-        { 
+        {
 
         }
 
@@ -328,6 +337,30 @@ namespace DeliveryWolt.Controllers
         {
 
         }
+
+        public ActionResult deleteDeliveries(IEnumerable<int> ids)
+        {
+            if (ids != null)
+            {
+                string s = "";
+                if (ids != null)
+                {
+                    s = string.Join(",", ids);
+                }
+
+                string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+                string query = String.Format("UPDATE delivery SET display = 0 WHERE id in ({0})", s);
+                MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+                MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
+                cmd.CommandTimeout = 60;
+                databaseConnection.Open();
+                cmd.ExecuteNonQuery();
+                databaseConnection.Close();
+            }
+            
+            return openManualList();
+        }
+
 
     }
 }
