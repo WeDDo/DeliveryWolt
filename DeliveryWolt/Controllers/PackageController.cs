@@ -254,7 +254,8 @@ namespace DeliveryWolt.Controllers
                             reader.GetBoolean(7),
                             reader.GetString(8),
                             Convert.ToInt32(reader.GetString(9)),
-                            Convert.ToInt32(reader.GetString(10))
+                            Convert.ToInt32(reader.GetString(10)),
+                            Convert.ToInt32(reader.GetString(12))
                         ));
 
                     }
@@ -357,7 +358,8 @@ namespace DeliveryWolt.Controllers
                             (bool)row[7],
                             (string)row[8],
                             del_id,
-                            war_id));
+                            war_id,
+                            (int)row[12]));
                 }
             }
             else
@@ -375,7 +377,7 @@ namespace DeliveryWolt.Controllers
             DataTable table = new DataTable();
             List<Package> packages = new List<Package>();
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            string query = String.Format("SELECT * FROM package WHERE reserved_by={0}", delivery_id);
+            string query = String.Format("SELECT * FROM package WHERE reserved_by={0} ORDER BY `order_by`", delivery_id);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
             cmd.CommandTimeout = 60;
@@ -417,7 +419,8 @@ namespace DeliveryWolt.Controllers
                             (bool)row[7],
                             (string)row[8],
                             del_id,
-                            war_id));
+                            war_id,
+                            (int)row[12]));
                 }
             }
             else
@@ -512,7 +515,8 @@ namespace DeliveryWolt.Controllers
                             reader.GetBoolean(7),
                             reader.GetString(8),
                             Convert.ToInt32(reader.GetString(9)),
-                            Convert.ToInt32(reader.GetString(10))
+                            Convert.ToInt32(reader.GetString(10)),
+                            Convert.ToInt32(reader.GetString(12))
                         ));
 
                     }
@@ -533,6 +537,8 @@ namespace DeliveryWolt.Controllers
         }
 
         //-------------------------------------------------------------------------------------
+
+
     }
     
 }
