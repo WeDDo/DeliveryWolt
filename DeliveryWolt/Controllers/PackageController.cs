@@ -316,7 +316,7 @@ namespace DeliveryWolt.Controllers
             DataTable table = new DataTable();
             List<Package> packages = new List<Package>();
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            string query = String.Format("SELECT * FROM package WHERE delivery_id={0}", delivery_id);
+            string query = String.Format("SELECT * FROM package WHERE delivery_id={0} ORDER BY Order_by", delivery_id);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
             cmd.CommandTimeout = 60;
@@ -377,7 +377,7 @@ namespace DeliveryWolt.Controllers
             DataTable table = new DataTable();
             List<Package> packages = new List<Package>();
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            string query = String.Format("SELECT * FROM package WHERE reserved_by={0} ORDER BY `order_by`", delivery_id);
+            string query = String.Format("SELECT * FROM package WHERE reserved_by={0} AND status=\"reserved\" ORDER BY `order_by`", delivery_id);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
             cmd.CommandTimeout = 60;

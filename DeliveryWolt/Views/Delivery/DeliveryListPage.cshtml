@@ -141,8 +141,6 @@
                         @Html.DisplayFor(model => package.Delivery_id)
                     </dd>
                 </dl>
-                //@Html.ActionLink("Change State", "changeState", new { id = package.Id })
-                //<a href="/Package/changeState?did=@package.Id">Change package state</a>
 
                 var options = new SelectList(package.getStatuses());
 
@@ -160,89 +158,79 @@
 
     @if (Model.viewDel == "ViewPersonalDeliveryList")
     {
-    <div>
+        <div>
 
-    <li>@Html.ActionLink("Create New Delivery", "CreateNewDelivery", "Delivery")</li>
-    <dl class="dl-horizontal">
+            <li>@Html.ActionLink("Create New Delivery", "CreateNewDelivery", "Delivery")</li>
+            <dl class="dl-horizontal">
 
-        @foreach (Delivery delivery in Model.delivery)
-        {
-            <dt>
-                @Html.DisplayNameFor(model => delivery.Id)
-            </dt>
+                @foreach (Delivery delivery in Model.delivery)
+                {
+                    <dt>
+                        @Html.DisplayNameFor(model => delivery.Id)
+                    </dt>
 
-            <dd>
-                @Html.DisplayFor(model => delivery.Id)
-            </dd>
+                    <dd>
+                        @Html.DisplayFor(model => delivery.Id)
+                    </dd>
 
-            <dt>
-                @Html.DisplayNameFor(model => delivery.Cost)
-            </dt>
+                    <dt>
+                        @Html.DisplayNameFor(model => delivery.Cost)
+                    </dt>
 
-            <dd>
-                @Html.DisplayFor(model => delivery.Cost)
-            </dd>
+                    <dd>
+                        @Html.DisplayFor(model => delivery.Cost)
+                    </dd>
 
-            <dt>
-                @Html.DisplayNameFor(model => delivery.TotalDistance)
-            </dt>
+                    <dt>
+                        @Html.DisplayNameFor(model => delivery.TotalDistance)
+                    </dt>
 
-            <dd>
-                @Html.DisplayFor(model => delivery.TotalDistance)
-            </dd>
-        }
-    </dl>
-    <div>
-        <table style="width:100%">
-            <tr>
-                <th>Id</th>
-                <th>Dimensions</th>
-                <th>Weight</th>
-                <th>Due</th>
-                <th>Address</th>
-                <th>Cost Modifier</th>
-                <th>Priority</th>
-                <th>City</th>
-                <th>Warehouse Id</th>
-            </tr>
-            @foreach (Package package in Model.packages)
-            {
-                <tr>
-                    <td>@Html.DisplayFor(model => package.Id)</td>
-                    <td>@Html.DisplayFor(model => package.Dimensions)</td>
-                    <td>@Html.DisplayFor(model => package.Weight)</td>
-                    <td>@Html.DisplayFor(model => package.Due)</td>
-                    <td>@Html.DisplayFor(model => package.Address)</td>
-                    <td>@Html.DisplayFor(model => package.CostModifier)</td>
-                    <td>@Html.DisplayFor(model => package.Priority)</td>
-                    <td>@Html.DisplayFor(model => package.City)</td>
-                    <td>@Html.DisplayFor(model => package.Warehouse_id)</td>
-                </tr>
-            }
-        </table>
-    </div>
+                    <dd>
+                        @Html.DisplayFor(model => delivery.TotalDistance)
+                    </dd>
 
-</div>
+                    <div>
+                        <table style="width:100%">
+                            <tr>
+                                <th>No.</th>
+                                <th>Id</th>
+                                <th>Dimensions</th>
+                                <th>Weight</th>
+                                <th>Due</th>
+                                <th>Address</th>
+                                <th>Cost Modifier</th>
+                                <th>Priority</th>
+                                <th>City</th>
+                                <th>Warehouse Id</th>
+                                <th>Remove</th>
+                            </tr>
+                            @foreach (Package package in Model.packages)
+                            {
+                                if (delivery.Id == package.Delivery_id)
+                                {
+                        <tr>
+                            <td>@Html.DisplayFor(model => package.Order_by)</td>
+                            <td>@Html.DisplayFor(model => package.Id)</td>
+                            <td>@Html.DisplayFor(model => package.Dimensions)</td>
+                            <td>@Html.DisplayFor(model => package.Weight)</td>
+                            <td>@Html.DisplayFor(model => package.Due)</td>
+                            <td>@Html.DisplayFor(model => package.Address)</td>
+                            <td>@Html.DisplayFor(model => package.CostModifier)</td>
+                            <td>@Html.DisplayFor(model => package.Priority)</td>
+                            <td>@Html.DisplayFor(model => package.City)</td>
+                            <td>@Html.DisplayFor(model => package.Warehouse_id)</td>
+                            <td>@Html.CheckBox(package.Id.ToString())</td>
+                        </tr>
+                                }
+                            }
+                        </table>
+                    </div>
+                }
+
+            </dl>
+
+
+        </div>
     }
 </body>
 </html>
-
-
-
-
-
-
-
-
-@*<p>
-        @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-        @Html.ActionLink("Back to List", "Index")
-    </p>*@
-
-
-@*<li>@Html.ActionLink("Change package state", "ChangePackageState", "Delivery")</li>
-    <li>@Html.ActionLink("Remove package from delivery", "RemovePackageFromDelivery", "Delivery")</li>
-    <h2>PersonalDeliveryListPage</h2>
-
-    <li>@Html.ActionLink("Create new delivery", "CreateNewDelivery", "Delivery")</li>
-    <li>@Html.ActionLink("Remove some deliveries from personal delivery list", "RemoveSomeDeliveries", "Delivery")</li>*@

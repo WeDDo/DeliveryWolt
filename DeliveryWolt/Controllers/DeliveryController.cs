@@ -25,9 +25,11 @@ namespace DeliveryWolt.Controllers
         {
             Delivery delivery = getLastDelivery(1);
             PackageController package = new PackageController();
-
-            List<Package> packages = package.getPackages(delivery.Id);
-
+            List<Package> packages = new List<Package>();
+            if (delivery != null)
+            {
+                packages = package.getPackages(delivery.Id);
+            }
             // Draw delivey route method
 
             return displayDeliveryPage(delivery, packages);
@@ -76,7 +78,7 @@ namespace DeliveryWolt.Controllers
             DataTable table = new DataTable();
             List<Delivery> delivery = new List<Delivery>();
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            string query = String.Format("SELECT * FROM delivery WHERE deliveryman_id={0} ORDER BY id DESC LIMIT 1", deliveryman_id);
+            string query = String.Format("SELECT * FROM delivery WHERE deliveryman_id={0} ORDER BY id", deliveryman_id);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
             MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
             cmd.CommandTimeout = 60;
@@ -121,8 +123,21 @@ namespace DeliveryWolt.Controllers
             List<Delivery> deliveries = getDeliveries(1);
             PackageController package = new PackageController();
 
-            List<Package> packages = package.getPackages(deliveries[0].Id);
+            List<Package> packages = new List<Package>();
 
+            foreach (Delivery del in deliveries)
+            {
+                List<Package> pack = package.getPackages(del.Id);
+                if (pack != null)
+                {
+                    foreach (Package pk in pack)
+                    {
+                        packages.Add(pk);
+                    }
+                }
+            }
+
+            
 
             //drawDeliveryRoute method
             //displayDeliveryPage(deliveries);
@@ -323,10 +338,73 @@ namespace DeliveryWolt.Controllers
         }
 
         //-------------------------------------------------------------------------------------
-        [ActionName("SaveManualDeliveryList")]
-        public void saveDeliveriesLIst()
+        
+        public ActionResult saveDeliveriesList(int del_id, double dist, double cost)
         {
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = String.Format("INSERT INTO `delivery`(`cost`, `total_distance`, `display`, `deliveryman_id`) VALUES ('{0}','{1}','{2}','{3}');", cost, dist, 1, del_id);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
 
+            try
+            {
+                databaseConnection.Open();
+                MySqlDataReader myReader = commandDatabase.ExecuteReader();
+
+                //Successful add
+
+                databaseConnection.Close();
+            }
+            catch (Exception ex)
+            {
+                // Show any error message.
+
+            }
+
+            DataTable table = new DataTable();
+            query = String.Format("SELECT `id` FROM `delivery` WHERE `deliveryman_id` = '{0}' ORDER BY `id` DESC LIMIT 1", del_id);
+            commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            databaseConnection.Open();
+            MySqlDataAdapter adapter = new MySqlDataAdapter(commandDatabase);
+            adapter.Fill(table);
+            int id = 0;
+            foreach (DataRow row in table.Rows)
+            {
+                id = (int)row[0];
+            }
+            databaseConnection.Close();
+            query = "";
+
+            PackageController packageController = new PackageController();
+            List<Package> pack = packageController.getPackages2(del_id);
+
+            foreach (Package package in pack)
+            {
+                query = query + String.Format("UPDATE `package` SET `delivery_id`='{0}', status=\"in_transit\" WHERE `Id` = '{1}';", id, package.Id);
+            }
+
+
+            commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            try
+            {
+                databaseConnection.Open();
+                MySqlDataReader myReader = commandDatabase.ExecuteReader();
+
+                //Successful add
+
+                databaseConnection.Close();
+            }
+            catch (Exception ex)
+            {
+                // Show any error message.
+
+            }
+
+
+            return openManualList();
         }
 
     }
