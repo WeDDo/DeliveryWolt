@@ -234,3 +234,37 @@
     }
 </body>
 </html>
+<div>
+
+    <li>@Html.ActionLink("Create New Delivery", "CreateNewDelivery", "Delivery")</li>
+
+
+
+    <input type="button" value="Update" onclick="UpdateStatuses()" />
+
+</body>
+</html>
+
+<script>
+
+    function UpdateStatuses() {
+        const ids = [...document.querySelectorAll("[name=checkbox]")].filter(({checked}) => checked).map(({id}) => id)
+        var idList = new Array();
+        for (var i = 0; i < ids.length; i++) {
+            idList.push(parseInt(ids[i]));
+        }
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("deleteDeliveries", "Delivery")",
+            data: ({ ids: idList }),
+            success: function (data) {
+                setInterval('location.reload()', 100);
+            },
+            error: function (data) {
+                console.log(data);
+            }
+            
+        });
+    }
+</script>
+
