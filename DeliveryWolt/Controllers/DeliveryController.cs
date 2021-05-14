@@ -425,7 +425,7 @@ namespace DeliveryWolt.Controllers
                 cmd.ExecuteNonQuery();
                 databaseConnection.Close();
             }
-            
+
             return openManualList();
         }
 
