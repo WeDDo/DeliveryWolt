@@ -158,6 +158,12 @@ namespace DeliveryWolt.Controllers
         //-------------------------------------------------------------------------------------
         public ActionResult addPackageToList(int id, int order)
         {
+            sqlcheck(id, order);
+            return openManualList();
+        }
+
+        public void sqlcheck(int id,int order)
+        {
             int idworker = 1;
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
             // Select all
@@ -181,7 +187,6 @@ namespace DeliveryWolt.Controllers
             {
                 // Ops, maybe the id doesn't exists ?
             }
-            return openManualList();
         }
         //------------------------------------------------------------
         [ActionName("CreateNewDelivery")]
@@ -296,8 +301,6 @@ namespace DeliveryWolt.Controllers
             {
                 // Ops, maybe the id doesn't exists ?
             }
-
-
         }
 
         //-------------------------------------------------------------------------------------
