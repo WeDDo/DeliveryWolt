@@ -13,6 +13,8 @@
     <title>DeliveryListPage</title>
 </head>
 <body>
+    @Html.ActionLink("View map", "ViewMap", "Delivery")
+
     @if (Model.viewDel == "ViewDelivery")
     {
         <div>
@@ -158,88 +160,88 @@
 
     @if (Model.viewDel == "ViewPersonalDeliveryList")
     {
-<div>
+        <div>
 
-    <li>@Html.ActionLink("Create New Delivery", "CreateNewDelivery", "Delivery")</li>
+            <li>@Html.ActionLink("Create New Delivery", "CreateNewDelivery", "Delivery")</li>
 
-        <input type="button" value="Update" onclick="UpdateStatuses()" />
-    <dl class="dl-horizontal">
+            <input type="button" value="Update" onclick="UpdateStatuses()" />
+            <dl class="dl-horizontal">
 
-        @foreach (Delivery delivery in Model.delivery)
-        {
-            if (delivery.Displayed == true)
-            {
-            <dt>
-                @Html.DisplayNameFor(model => delivery.Id)
-            </dt>
-
-            <dd>
-                @Html.DisplayFor(model => delivery.Id)
-            </dd>
-
-            <dt>
-                @Html.DisplayNameFor(model => delivery.Cost)
-            </dt>
-
-            <dd>
-                @Html.DisplayFor(model => delivery.Cost)
-            </dd>
-
-            <dt>
-                @Html.DisplayNameFor(model => delivery.TotalDistance)
-            </dt>
-
-            <dd>
-                @Html.DisplayFor(model => delivery.TotalDistance)
-            </dd>
-            <dt>
-                Remove
-            </dt>
-
-            <dd>
-                <input type="checkbox" class="checkbox" id="@delivery.Id" name="checkbox" />
-            </dd>
-            <div>
-                <table style="width:100%">
-                    <tr>
-                        <th>No.</th>
-                        <th>Id</th>
-                        <th>Dimensions</th>
-                        <th>Weight</th>
-                        <th>Due</th>
-                        <th>Address</th>
-                        <th>Cost Modifier</th>
-                        <th>Priority</th>
-                        <th>City</th>
-                        <th>Warehouse Id</th>
-                    </tr>
-                    @foreach (Package package in Model.packages)
+                @foreach (Delivery delivery in Model.delivery)
+                {
+                    if (delivery.Displayed == true)
                     {
-                        if (delivery.Id == package.Delivery_id)
-                        {
-                            <tr>
-                                <td>@Html.DisplayFor(model => package.Order_by)</td>
-                                <td>@Html.DisplayFor(model => package.Id)</td>
-                                <td>@Html.DisplayFor(model => package.Dimensions)</td>
-                                <td>@Html.DisplayFor(model => package.Weight)</td>
-                                <td>@Html.DisplayFor(model => package.Due)</td>
-                                <td>@Html.DisplayFor(model => package.Address)</td>
-                                <td>@Html.DisplayFor(model => package.CostModifier)</td>
-                                <td>@Html.DisplayFor(model => package.Priority)</td>
-                                <td>@Html.DisplayFor(model => package.City)</td>
-                                <td>@Html.DisplayFor(model => package.Warehouse_id)</td>
-                            </tr>
-                        }
+                        <dt>
+                            @Html.DisplayNameFor(model => delivery.Id)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => delivery.Id)
+                        </dd>
+
+                        <dt>
+                            @Html.DisplayNameFor(model => delivery.Cost)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => delivery.Cost)
+                        </dd>
+
+                        <dt>
+                            @Html.DisplayNameFor(model => delivery.TotalDistance)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => delivery.TotalDistance)
+                        </dd>
+                        <dt>
+                            Remove
+                        </dt>
+
+                        <dd>
+                            <input type="checkbox" class="checkbox" id="@delivery.Id" name="checkbox" />
+                        </dd>
+                        <div>
+                            <table style="width:100%">
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Id</th>
+                                    <th>Dimensions</th>
+                                    <th>Weight</th>
+                                    <th>Due</th>
+                                    <th>Address</th>
+                                    <th>Cost Modifier</th>
+                                    <th>Priority</th>
+                                    <th>City</th>
+                                    <th>Warehouse Id</th>
+                                </tr>
+                                @foreach (Package package in Model.packages)
+                                {
+                                    if (delivery.Id == package.Delivery_id)
+                                    {
+                                        <tr>
+                                            <td>@Html.DisplayFor(model => package.Order_by)</td>
+                                            <td>@Html.DisplayFor(model => package.Id)</td>
+                                            <td>@Html.DisplayFor(model => package.Dimensions)</td>
+                                            <td>@Html.DisplayFor(model => package.Weight)</td>
+                                            <td>@Html.DisplayFor(model => package.Due)</td>
+                                            <td>@Html.DisplayFor(model => package.Address)</td>
+                                            <td>@Html.DisplayFor(model => package.CostModifier)</td>
+                                            <td>@Html.DisplayFor(model => package.Priority)</td>
+                                            <td>@Html.DisplayFor(model => package.City)</td>
+                                            <td>@Html.DisplayFor(model => package.Warehouse_id)</td>
+                                        </tr>
+                                    }
+                                }
+                            </table>
+                        </div>
                     }
-                </table>
-            </div>
-            }
-        }
+                }
 
-    </dl>
+            </dl>
 
 
-</div>
+        </div>
     }
 
 </body>

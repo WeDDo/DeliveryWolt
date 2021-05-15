@@ -1,0 +1,101 @@
+﻿
+@{
+    ViewBag.Title = "MapView";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Map</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <style type="text/css">
+        /* Always set the map height explicitly to define the size of the div
+        * element that contains the map. */
+        #map {
+            height: 300px;
+        }
+
+        /* Optional: Makes the sample page fill the window. */
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <script>
+        var myLatlng1;
+        var myLatlng2;
+
+        var directionsService;
+        var directionsRenderer;
+
+        function init() {
+            calcRoute();
+        }
+
+        function initMap() {
+            myLatlng1 = new google.maps.LatLng(-25.363882, 131.044922);
+            myLatlng2 = new google.maps.LatLng(-28, 150.044922);
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer();
+
+            var myOptions = {
+                zoom: 8,
+                center: myLatlng1,
+                mapTypeId: google.maps.MapTypeId.HYBRID
+            };
+            var map = new google.maps.Map(document.getElementById("map"), myOptions);
+
+            var contentString = '<div id="content">Info window html</div>';
+
+            var infowindow = new google.maps.InfoWindow({
+                content: contentString
+            });
+
+            var marker1 = new google.maps.Marker({
+                position: myLatlng1,
+                map: map,
+                title: 'Marker Title'
+            });
+
+            var marker2 = new google.maps.Marker({
+                position: myLatlng2,
+                map: map,
+                title: 'Marker Title'
+            });
+
+            marker1.setMap(map);
+            marker2.setMap(map)
+
+            directionsRenderer.setMap(map);
+        }
+
+        function calcRoute() {
+            var start = myLatlng1;
+            var end = myLatlng2;
+            var request = {
+                origin: start,
+                destination: end,
+                travelMode: 'DRIVING'
+            };
+            directionsService.route(request, function (result, status) {
+                if (status == 'OK') {
+                    directionsRenderer.setDirections(result);
+                }
+            });
+        }
+
+        window.onload = init;
+    </script>
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk&callback=initMap&libraries=&v=weekly" async>
+    </script>
+</body>
+</html>

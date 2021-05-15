@@ -199,10 +199,10 @@ namespace DeliveryWolt.Controllers
             return openPersonalDeliveryListPage(deliveries, packages);
         }
 
-        public void getRegionsPackageAmount()
+        public void getRegionsPackageAmount(string name)
         {
             PackageController packageController = new PackageController();
-            int package_amount = packageController.getRegionsPackageAmount();
+            int package_amount = packageController.getRegionsPackageAmount(name);
             if (package_amount == 0)
             {
                 //displayNoPackagesNotification()
@@ -210,8 +210,11 @@ namespace DeliveryWolt.Controllers
             else
             {
                 //GL HF
+                for(int i = 0; i <= package_amount; i++)
+                {
+                    packageController.getAvailablePackages(name);
+                }
             }
-
         }
 
 
@@ -429,6 +432,11 @@ namespace DeliveryWolt.Controllers
             return openManualList();
         }
 
+        [ActionName("ViewMap")]
+        public ActionResult viewDeliveryMap()
+        {
+            return View("MapView");
+        }
 
     }
 }
