@@ -468,11 +468,68 @@ namespace DeliveryWolt.Controllers
         }
 
         //-------------------------------------------------------------------------------------
-        public int getRegionsPackageAmount()
+        public int getRegionsPackageAmount(string[] regions)
         {
             List<Warehouse> deliveries = new List<Warehouse>();
-            //sql uzklausa 
-            int package_amount = 1;
+
+            List<Package> packagesInRegion = new List<Package>();
+
+            foreach(var region in regions)
+            {
+                //sql uzklausa 
+                string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+                // Select all
+                string query = String.Format("SELECT * FROM package WHERE city = \"{0}\" AND status = \"available\"", region);
+
+                MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+                MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+                commandDatabase.CommandTimeout = 60;
+                MySqlDataReader reader;
+
+                try
+                {
+                    databaseConnection.Open();
+                    reader = commandDatabase.ExecuteReader();
+                    // Success, now list 
+
+                    // If there are available rows
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            packagesInRegion.Add(new Package(
+                                Convert.ToInt32(reader.GetString(0)),
+                                reader.GetString(1),
+                                reader.GetDouble(2),
+                                reader.GetDateTime(3),
+                                reader.GetString(4),
+                                reader.GetString(5),
+                                reader.GetDouble(6),
+                                reader.GetBoolean(7),
+                                reader.GetString(8),
+                                Convert.ToInt32(reader.GetString(9)),
+                                Convert.ToInt32(reader.GetString(10)),
+                                Convert.ToInt32(reader.GetString(12))
+                            ));
+
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No rows found.");
+                    }
+
+                    databaseConnection.Close();
+                }
+                catch (Exception ex)
+
+                {
+                    System.Diagnostics.Debug.WriteLine(ex);
+                }
+
+            }
+
+            int package_amount = packagesInRegion.Count;
             return package_amount;
         }
 
@@ -538,7 +595,10 @@ namespace DeliveryWolt.Controllers
 
         //-------------------------------------------------------------------------------------
 
+        public void getPathBetweenPoints()
+        {
 
+        }
     }
     
 }
