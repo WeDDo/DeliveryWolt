@@ -25,7 +25,7 @@ namespace DeliveryWolt.Controllers
         [ActionName("ViewDelivery")]
         public ActionResult openDeliveryView()
         {
-            //getRegionsPackageAmount("Kaunas");   FOR TESTING MAIN ALGOSTART ITS A BROKEN 
+            getRegionsPackageAmount("Kaunas");   //FOR TESTING MAIN ALGOSTART ITS A BROKEN 
             Delivery delivery = getLastDelivery(1);
             PackageController package = new PackageController();
             List<Package> packages = new List<Package>();
@@ -207,6 +207,8 @@ namespace DeliveryWolt.Controllers
             string[] regions = new string[] { "Kaunas", };
 
             PackageController packageController = new PackageController();
+            List<string> packageCoordinates = new List<string>();
+
             int package_amount = packageController.getRegionsPackageAmount(regions);
             if (package_amount == 0)
             {
@@ -216,12 +218,12 @@ namespace DeliveryWolt.Controllers
             else
             {
                 //GL HF
-                for(int i = 0; i <= regions.Count(); i++)
+                for(int i = 0; i < regions.Count(); i++)
                 {
                     List<Package> regionPackageList = new List<Package>();
                     regionPackageList = packageController.getAvailablePackages(regions[i]);
 
-                    string address = "24%20Sussex%20Drive%20Ottawa%20ON";
+                    string address = "Kaunas";
                     string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk");
                     System.Diagnostics.Debug.WriteLine(requestUri);
                     WebRequest request = WebRequest.Create(requestUri);
@@ -233,7 +235,10 @@ namespace DeliveryWolt.Controllers
                     XElement lat = locationElement.Element("lat");
                     XElement lng = locationElement.Element("lng");
 
-                    System.Diagnostics.Debug.WriteLine("NOT EMPTY");
+                    string coordinates = lat + " " + lng;
+                    packageCoordinates.Add(coordinates);
+
+                    System.Diagnostics.Debug.WriteLine("NOT EMPTY ;;; " + lat + " " + lng);
                 }
             }
         }
