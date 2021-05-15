@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
 using System.Linq;
+using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using System.Xml.Linq;
 using DeliveryWolt.Models;
 using MySql.Data.MySqlClient;
 
@@ -23,6 +25,7 @@ namespace DeliveryWolt.Controllers
         [ActionName("ViewDelivery")]
         public ActionResult openDeliveryView()
         {
+            //getRegionsPackageAmount("Kaunas");   FOR TESTING MAIN ALGOSTART ITS A BROKEN 
             Delivery delivery = getLastDelivery(1);
             PackageController package = new PackageController();
             List<Package> packages = new List<Package>();
@@ -201,18 +204,36 @@ namespace DeliveryWolt.Controllers
 
         public void getRegionsPackageAmount(string name)
         {
+            string[] regions = new string[] { "Kaunas", };
+
             PackageController packageController = new PackageController();
-            int package_amount = packageController.getRegionsPackageAmount(name);
+            int package_amount = packageController.getRegionsPackageAmount(regions);
             if (package_amount == 0)
             {
                 //displayNoPackagesNotification()
+                System.Diagnostics.Debug.WriteLine("EMTPY");
             }
             else
             {
                 //GL HF
-                for(int i = 0; i <= package_amount; i++)
+                for(int i = 0; i <= regions.Count(); i++)
                 {
-                    packageController.getAvailablePackages(name);
+                    List<Package> regionPackageList = new List<Package>();
+                    regionPackageList = packageController.getAvailablePackages(regions[i]);
+
+                    string address = "24%20Sussex%20Drive%20Ottawa%20ON";
+                    string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk");
+                    System.Diagnostics.Debug.WriteLine(requestUri);
+                    WebRequest request = WebRequest.Create(requestUri);
+                    WebResponse response = request.GetResponse();
+                    XDocument xdoc = XDocument.Load(response.GetResponseStream());
+
+                    XElement result = xdoc.Element("GeocodeResponse").Element("result");
+                    XElement locationElement = result.Element("geometry").Element("location");
+                    XElement lat = locationElement.Element("lat");
+                    XElement lng = locationElement.Element("lng");
+
+                    System.Diagnostics.Debug.WriteLine("NOT EMPTY");
                 }
             }
         }
@@ -437,6 +458,5 @@ namespace DeliveryWolt.Controllers
         {
             return View("MapView");
         }
-
     }
 }
