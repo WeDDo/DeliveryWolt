@@ -223,17 +223,18 @@ namespace DeliveryWolt.Controllers
             else
             {
                 Delivery delivery = new Delivery();
+                delivery.TotalDistance = 0;
                 List<Package> deliveryPackages = new List<Package>();
 
                 List<Package> regionPackageList = new List<Package>();
                 //GL HF
                 for (int i = 0; i < regions.Count(); i++)        //AVAILABLE PACKAGES IN SELECTED REGIONS
                 {
-                    regionPackageList = packageController.getAvailablePackages(regions[i]);
+                    regionPackageList.AddRange(packageController.getAvailablePackages(regions[i]));
                 }
                 for(int i = 0; i < regionPackageList.Count; i++) //GEOLOCATION 
                 {
-                    string address = regionPackageList[i].Address;
+                    string address = regionPackageList[i].City;
                     string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk");
                     System.Diagnostics.Debug.WriteLine(requestUri);
                     WebRequest request = WebRequest.Create(requestUri);
@@ -256,12 +257,14 @@ namespace DeliveryWolt.Controllers
                     deliveryPackages.Add(regionPackageList[i]);
                 }
 
-                string origin = deliveryPackages[0].Address;
+                string origin = deliveryPackages[0].City.ToString(); //CHANGE CITY TO ADDRESS AND CITY WHEN FULLY WORKING
                 string destinations = "";
-                for (int i = 0; i < deliveryPackages.Count; i++) //PAKEISTI ATGAL i = 1, kad pirmas butu origin for testing padariau sitaip dabar
+                for (int i = 1; i < deliveryPackages.Count; i++) //PAKEISTI ATGAL i = 1, kad pirmas butu origin for testing padariau sitaip dabar
                 {
-                    destinations += deliveryPackages[i].ToString() + "|";
+                    destinations += deliveryPackages[i].City.ToString() + "|";
                 }
+                System.Diagnostics.Debug.WriteLine("ORIGIN: " + origin);
+                System.Diagnostics.Debug.WriteLine("DESTINATIONS: " + destinations);
                 string requestUri1 = string.Format("https://maps.googleapis.com/maps/api/distancematrix/xml?units=metric&origins={1}&destinations={0}&key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk", Uri.EscapeDataString(destinations), Uri.EscapeDataString(origin));
                 System.Diagnostics.Debug.WriteLine(requestUri1);
                 WebRequest request1 = WebRequest.Create(requestUri1);
@@ -273,16 +276,24 @@ namespace DeliveryWolt.Controllers
                 foreach (var item in result1.Elements("element"))
                 {
                     XElement distanceElement = item.Element("distance");
-                    distances.Add(distanceElement.Value);
-                    System.Diagnostics.Debug.WriteLine(distanceElement.Value);
+                    //System.Diagnostics.Debug.WriteLine(distanceElement.Value.TrimEnd(new char[] { 'k', 'm', ' ' }));
+                    if (distanceElement != null)
+                    {
+                        distances.Add(distanceElement.Element("value").Value.ToString());
+                        System.Diagnostics.Debug.WriteLine("ADDED");
+                    }
                 }
-
+                System.Diagnostics.Debug.WriteLine(distances.Count);
+                System.Diagnostics.Debug.WriteLine(distances[0] + " " + distances[1]);
                 //INSERT NEW DELIVERY AND UPDATE PACKAGE DELIVERY_ID IN SQL AND CODE
-                for(int i = 0; i < deliveryPackages.Count; i++)
+                for (int i = 1; i < deliveryPackages.Count; i++)
                 {
                     delivery.Cost += deliveryPackages[i].CostModifier;
                     delivery.Deliveryman_id = 1;
-                    delivery.TotalDistance += int.Parse(distances[i]);
+                }
+                for (int j = 0; j < distances.Count; j++)
+                {
+                    delivery.TotalDistance += double.Parse(distances[j]);
                 }
                 //INSERTING DELIVERY INTO DATABASE --->
                 string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
@@ -291,6 +302,20 @@ namespace DeliveryWolt.Controllers
                 MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
                 commandDatabase.CommandTimeout = 60;
 
+                try
+                {
+                    databaseConnection.Open();
+                    MySqlDataReader myReader = commandDatabase.ExecuteReader();
+
+                    //Successful add
+
+                    databaseConnection.Close();
+                }
+                catch (Exception ex)
+                {
+                    // Show any error message.
+
+                }
             }
         }
 
