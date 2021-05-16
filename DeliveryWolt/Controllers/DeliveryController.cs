@@ -25,7 +25,7 @@ namespace DeliveryWolt.Controllers
         [ActionName("ViewDelivery")]
         public ActionResult openDeliveryView()
         {
-            getRegionsPackageAmount("Kaunas");   //FOR TESTING MAIN ALGOSTART ITS A BROKEN 
+            //getRegionsPackageAmount("Kaunas");   //FOR TESTING MAIN ALGOSTART ITS A BROKEN 
             Delivery delivery = getLastDelivery(1);
             PackageController package = new PackageController();
             List<Package> packages = new List<Package>();
@@ -231,8 +231,8 @@ namespace DeliveryWolt.Controllers
             {
                 Delivery delivery = new Delivery();
                 delivery.TotalDistance = 0;
-                List<Package> deliveryPackages = new List<Package>();
 
+                List<Package> deliveryPackages = new List<Package>();
                 List<Package> regionPackageList = new List<Package>();
                 //GL HF
                 for (int i = 0; i < regions.Count(); i++)        //AVAILABLE PACKAGES IN SELECTED REGIONS
