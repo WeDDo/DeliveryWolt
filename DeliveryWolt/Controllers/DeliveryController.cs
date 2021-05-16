@@ -284,6 +284,13 @@ namespace DeliveryWolt.Controllers
                     delivery.Deliveryman_id = 1;
                     delivery.TotalDistance += int.Parse(distances[i]);
                 }
+                //INSERTING DELIVERY INTO DATABASE --->
+                string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+                string query = String.Format("INSERT INTO `delivery`(`cost`, `total_distance`, `display`, `deliveryman_id`) VALUES ('{0}','{1}','{2}','{3}');", delivery.Cost, delivery.TotalDistance, 1, delivery.Deliveryman_id);
+                MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+                MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+                commandDatabase.CommandTimeout = 60;
+
             }
         }
 
