@@ -25,7 +25,7 @@ namespace DeliveryWolt.Controllers
         [ActionName("ViewDelivery")]
         public ActionResult openDeliveryView()
         {
-            //getRegionsPackageAmount("Kaunas");   FOR TESTING MAIN ALGOSTART ITS A BROKEN 
+            getRegionsPackageAmount("Kaunas");   //FOR TESTING MAIN ALGOSTART ITS A BROKEN 
             Delivery delivery = getLastDelivery(1);
             PackageController package = new PackageController();
             List<Package> packages = new List<Package>();
@@ -168,6 +168,12 @@ namespace DeliveryWolt.Controllers
         //-------------------------------------------------------------------------------------
         public ActionResult addPackageToList(int id, int order)
         {
+            sqlcheck(id, order);
+            return openManualList();
+        }
+
+        public void sqlcheck(int id,int order)
+        {
             int idworker = 1;
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
             // Select all
@@ -191,7 +197,6 @@ namespace DeliveryWolt.Controllers
             {
                 // Ops, maybe the id doesn't exists ?
             }
-            return openManualList();
         }
         //------------------------------------------------------------
         [ActionName("CreateNewDelivery")]
@@ -211,9 +216,11 @@ namespace DeliveryWolt.Controllers
 
         public void getRegionsPackageAmount(string name)
         {
-            string[] regions = new string[] { "Kaunas", };
+            string[] regions = new string[] { "Kaunas", "Vilnius"};
 
             PackageController packageController = new PackageController();
+            List<string> packageCoordinates = new List<string>();
+
             int package_amount = packageController.getRegionsPackageAmount(regions);
             if (package_amount == 0)
             {
@@ -222,13 +229,18 @@ namespace DeliveryWolt.Controllers
             }
             else
             {
-                //GL HF
-                for(int i = 0; i <= regions.Count(); i++)
-                {
-                    List<Package> regionPackageList = new List<Package>();
-                    regionPackageList = packageController.getAvailablePackages(regions[i]);
+                Delivery delivery = new Delivery();
+                List<Package> deliveryPackages = new List<Package>();
 
-                    string address = "24%20Sussex%20Drive%20Ottawa%20ON";
+                List<Package> regionPackageList = new List<Package>();
+                //GL HF
+                for (int i = 0; i < regions.Count(); i++)        //AVAILABLE PACKAGES IN SELECTED REGIONS
+                {
+                    regionPackageList = packageController.getAvailablePackages(regions[i]);
+                }
+                for(int i = 0; i < regionPackageList.Count; i++) //GEOLOCATION 
+                {
+                    string address = regionPackageList[i].Address;
                     string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk");
                     System.Diagnostics.Debug.WriteLine(requestUri);
                     WebRequest request = WebRequest.Create(requestUri);
@@ -240,8 +252,52 @@ namespace DeliveryWolt.Controllers
                     XElement lat = locationElement.Element("lat");
                     XElement lng = locationElement.Element("lng");
 
+                    string coordinates = lat.Value + "," + lng.Value;
+                    packageCoordinates.Add(coordinates);
+
                     System.Diagnostics.Debug.WriteLine("NOT EMPTY");
                 }
+                for (int i = 0; i < packageCoordinates.Count && deliveryPackages.Count <= 5; i++) //ADD TO DELIVERY LIST UNTIL SET AMOUNT
+                {
+                    System.Diagnostics.Debug.WriteLine(packageCoordinates[i]);
+                    deliveryPackages.Add(regionPackageList[i]);
+                }
+
+                string origin = deliveryPackages[0].Address;
+                string destinations = "";
+                for (int i = 0; i < deliveryPackages.Count; i++) //PAKEISTI ATGAL i = 1, kad pirmas butu origin for testing padariau sitaip dabar
+                {
+                    destinations += deliveryPackages[i].ToString() + "|";
+                }
+                string requestUri1 = string.Format("https://maps.googleapis.com/maps/api/distancematrix/xml?units=metric&origins={1}&destinations={0}&key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk", Uri.EscapeDataString(destinations), Uri.EscapeDataString(origin));
+                System.Diagnostics.Debug.WriteLine(requestUri1);
+                WebRequest request1 = WebRequest.Create(requestUri1);
+                WebResponse response1 = request1.GetResponse();
+                XDocument xdoc1 = XDocument.Load(response1.GetResponseStream());
+                XElement result1 = xdoc1.Element("DistanceMatrixResponse").Element("row");
+
+                List<string> distances = new List<string>();
+                foreach (var item in result1.Elements("element"))
+                {
+                    XElement distanceElement = item.Element("distance");
+                    distances.Add(distanceElement.Value);
+                    System.Diagnostics.Debug.WriteLine(distanceElement.Value);
+                }
+
+                //INSERT NEW DELIVERY AND UPDATE PACKAGE DELIVERY_ID IN SQL AND CODE
+                for(int i = 0; i < deliveryPackages.Count; i++)
+                {
+                    delivery.Cost += deliveryPackages[i].CostModifier;
+                    delivery.Deliveryman_id = 1;
+                    delivery.TotalDistance += int.Parse(distances[i]);
+                }
+                //INSERTING DELIVERY INTO DATABASE --->
+                string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+                string query = String.Format("INSERT INTO `delivery`(`cost`, `total_distance`, `display`, `deliveryman_id`) VALUES ('{0}','{1}','{2}','{3}');", delivery.Cost, delivery.TotalDistance, 1, delivery.Deliveryman_id);
+                MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+                MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+                commandDatabase.CommandTimeout = 60;
+
             }
         }
 
@@ -319,8 +375,6 @@ namespace DeliveryWolt.Controllers
             {
                 // Ops, maybe the id doesn't exists ?
             }
-
-
         }
 
         //-------------------------------------------------------------------------------------
@@ -454,6 +508,12 @@ namespace DeliveryWolt.Controllers
 
         [ActionName("ViewMap")]
         public ActionResult viewDeliveryMap()
+        {
+            return View("MapView");
+        }
+
+        [ActionName("AddToDelivery")]
+        public ActionResult addToDeliveryList()
         {
             return View("MapView");
         }
