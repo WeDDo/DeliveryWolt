@@ -256,26 +256,34 @@ namespace DeliveryWolt.Controllers
                     deliveryPackages.Add(regionPackageList[i]);
                 }
 
-                string origin = packageCoordinates[0];
+                string origin = deliveryPackages[0].Address;
                 string destinations = "";
-                for (int i = 0; i < packageCoordinates.Count; i++) //PAKEISTI ATGAL i = 1, kad pirmas butu origin for testing padariau sitaip dabar
+                for (int i = 0; i < deliveryPackages.Count; i++) //PAKEISTI ATGAL i = 1, kad pirmas butu origin for testing padariau sitaip dabar
                 {
-                    destinations += packageCoordinates[i].ToString() + "|";
+                    destinations += deliveryPackages[i].ToString() + "|";
                 }
                 string requestUri1 = string.Format("https://maps.googleapis.com/maps/api/distancematrix/xml?units=metric&origins={1}&destinations={0}&key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk", Uri.EscapeDataString(destinations), Uri.EscapeDataString(origin));
                 System.Diagnostics.Debug.WriteLine(requestUri1);
                 WebRequest request1 = WebRequest.Create(requestUri1);
                 WebResponse response1 = request1.GetResponse();
                 XDocument xdoc1 = XDocument.Load(response1.GetResponseStream());
-
                 XElement result1 = xdoc1.Element("DistanceMatrixResponse").Element("row");
-                XElement locationElement1 = result1.Element("element").Element("distance");
 
+                List<string> distances = new List<string>();
                 foreach (var item in result1.Elements("element"))
                 {
-                    System.Diagnostics.Debug.WriteLine(item.Element("distance").Value);
+                    XElement distanceElement = item.Element("distance");
+                    distances.Add(distanceElement.Value);
+                    System.Diagnostics.Debug.WriteLine(distanceElement.Value);
                 }
 
+                //INSERT NEW DELIVERY AND UPDATE PACKAGE DELIVERY_ID IN SQL AND CODE
+                for(int i = 0; i < deliveryPackages.Count; i++)
+                {
+                    delivery.Cost += deliveryPackages[i].CostModifier;
+                    delivery.Deliveryman_id = 1;
+                    delivery.TotalDistance += int.Parse(distances[i]);
+                }
             }
         }
 
