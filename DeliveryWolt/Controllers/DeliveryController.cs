@@ -260,7 +260,7 @@ namespace DeliveryWolt.Controllers
                 }
                 for (int i = 0; i < packageCoordinates.Count && deliveryPackages.Count <= 5; i++) //ADD TO DELIVERY LIST UNTIL SET AMOUNT
                 {
-                    System.Diagnostics.Debug.WriteLine(packageCoordinates[i]);
+                    //System.Diagnostics.Debug.WriteLine(packageCoordinates[i]);
                     deliveryPackages.Add(regionPackageList[i]);
                 }
 
@@ -283,7 +283,6 @@ namespace DeliveryWolt.Controllers
                 foreach (var item in result1.Elements("element"))
                 {
                     XElement distanceElement = item.Element("distance");
-                    //System.Diagnostics.Debug.WriteLine(distanceElement.Value.TrimEnd(new char[] { 'k', 'm', ' ' }));
                     if (distanceElement != null)
                     {
                         distances.Add(distanceElement.Element("value").Value.ToString());
@@ -313,16 +312,43 @@ namespace DeliveryWolt.Controllers
                 {
                     databaseConnection.Open();
                     MySqlDataReader myReader = commandDatabase.ExecuteReader();
-
                     //Successful add
-
                     databaseConnection.Close();
                 }
                 catch (Exception ex)
                 {
                     // Show any error message.
-
                 }
+
+                // SELECT * FROM Table ORDER BY ID DESC LIMIT 1 <-- select last created delivery from database to get id and pass it to package
+                delivery = getLastDelivery(1);
+                System.Diagnostics.Debug.WriteLine(delivery.Id);
+
+
+                for (int i = 0; i < deliveryPackages.Count; i++) //UPDATE EACH PACKAGE STATE
+                {
+                    query = String.Format("UPDATE `package` SET `status`= '{0}', `delivery_id`= '{1}', `reserved_by`= '{2}' WHERE `Id`= '{3}'", deliveryPackages[i].Statuses[1], delivery.Id, 1, deliveryPackages[i].Id); //CHANGE PACKAGE STATE TO RESERVED
+
+                    MySqlConnection databaseConnection1 = new MySqlConnection(connectionString);
+                    MySqlCommand commandDatabase1 = new MySqlCommand(query, databaseConnection1);
+                    commandDatabase.CommandTimeout = 60;
+                    MySqlDataReader reader;
+
+                    try
+                    {
+                        databaseConnection1.Open();
+                        reader = commandDatabase1.ExecuteReader();
+
+                        // Succesfully updated
+
+                        databaseConnection1.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Ops, maybe the id doesn't exists ?
+                    }
+                }
+                
             }
         }
 
