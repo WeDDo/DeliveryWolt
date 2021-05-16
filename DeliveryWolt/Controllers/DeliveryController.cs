@@ -29,9 +29,15 @@ namespace DeliveryWolt.Controllers
             Delivery delivery = getLastDelivery(1);
             PackageController package = new PackageController();
             List<Package> packages = new List<Package>();
+
             if (delivery != null)
             {
-                packages = package.getPackages(delivery.Id);
+                List<Package> temp = package.getPackages(delivery.Id);
+                if (temp != null)
+                {
+                    packages = temp;
+
+                }
             }
             // Draw delivey route method
 
@@ -103,6 +109,7 @@ namespace DeliveryWolt.Controllers
 
         public ActionResult removePackage(int id)
         {
+
             PackageController controller = new PackageController();
             controller.updateStatus(id, "available", null);
 
@@ -317,14 +324,6 @@ namespace DeliveryWolt.Controllers
 
                 }
             }
-        }
-
-
-        //-------------------------------------------------------------------------------------
-        [ActionName("RemoveSomeDeliveries")]
-        public void showdeliverymarkingform()
-        {
-
         }
 
 
