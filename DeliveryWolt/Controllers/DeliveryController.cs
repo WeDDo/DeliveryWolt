@@ -214,10 +214,8 @@ namespace DeliveryWolt.Controllers
             return openPersonalDeliveryListPage(deliveries, packages);
         }
 
-        public void getRegionsPackageAmount(string name)
+        public void getRegionsPackageAmount(string[] regions)
         {
-            string[] regions = new string[] { "Kaunas", "Vilnius"};
-
             PackageController packageController = new PackageController();
             List<string> packageCoordinates = new List<string>();
 
@@ -566,7 +564,10 @@ namespace DeliveryWolt.Controllers
         [ActionName("AddToDelivery")]
         public ActionResult addToDeliveryList()
         {
-            return View("MapView");
+            string[] regions = new string[] { "Kaunas", "Vilnius" };
+            getRegionsPackageAmount(regions);
+
+            return openDeliveryView();
         }
     }
 }
