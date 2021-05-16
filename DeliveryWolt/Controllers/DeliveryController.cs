@@ -209,7 +209,7 @@ namespace DeliveryWolt.Controllers
 
         public void getRegionsPackageAmount(string name)
         {
-            string[] regions = new string[] { "Kaunas", };
+            string[] regions = new string[] { "Kaunas", "Vilnius"};
 
             PackageController packageController = new PackageController();
             List<string> packageCoordinates = new List<string>();
@@ -222,13 +222,18 @@ namespace DeliveryWolt.Controllers
             }
             else
             {
-                //GL HF
-                for(int i = 0; i < regions.Count(); i++)
-                {
-                    List<Package> regionPackageList = new List<Package>();
-                    regionPackageList = packageController.getAvailablePackages(regions[i]);
+                Delivery delivery = new Delivery();
+                List<Package> deliveryPackages = new List<Package>();
 
-                    string address = "Kaunas";
+                List<Package> regionPackageList = new List<Package>();
+                //GL HF
+                for (int i = 0; i < regions.Count(); i++)        //AVAILABLE PACKAGES IN SELECTED REGIONS
+                {
+                    regionPackageList = packageController.getAvailablePackages(regions[i]);
+                }
+                for(int i = 0; i < regionPackageList.Count; i++) //GEOLOCATION 
+                {
+                    string address = regionPackageList[i].Address;
                     string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk");
                     System.Diagnostics.Debug.WriteLine(requestUri);
                     WebRequest request = WebRequest.Create(requestUri);
@@ -240,11 +245,37 @@ namespace DeliveryWolt.Controllers
                     XElement lat = locationElement.Element("lat");
                     XElement lng = locationElement.Element("lng");
 
-                    string coordinates = lat + " " + lng;
+                    string coordinates = lat.Value + "," + lng.Value;
                     packageCoordinates.Add(coordinates);
 
-                    System.Diagnostics.Debug.WriteLine("NOT EMPTY ;;; " + lat + " " + lng);
+                    System.Diagnostics.Debug.WriteLine("NOT EMPTY");
                 }
+                for (int i = 0; i < packageCoordinates.Count && deliveryPackages.Count <= 5; i++) //ADD TO DELIVERY LIST UNTIL SET AMOUNT
+                {
+                    System.Diagnostics.Debug.WriteLine(packageCoordinates[i]);
+                    deliveryPackages.Add(regionPackageList[i]);
+                }
+
+                string origin = packageCoordinates[0];
+                string destinations = "";
+                for (int i = 0; i < packageCoordinates.Count; i++) //PAKEISTI ATGAL i = 1, kad pirmas butu origin for testing padariau sitaip dabar
+                {
+                    destinations += packageCoordinates[i].ToString() + "|";
+                }
+                string requestUri1 = string.Format("https://maps.googleapis.com/maps/api/distancematrix/xml?units=metric&origins={1}&destinations={0}&key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk", Uri.EscapeDataString(destinations), Uri.EscapeDataString(origin));
+                System.Diagnostics.Debug.WriteLine(requestUri1);
+                WebRequest request1 = WebRequest.Create(requestUri1);
+                WebResponse response1 = request1.GetResponse();
+                XDocument xdoc1 = XDocument.Load(response1.GetResponseStream());
+
+                XElement result1 = xdoc1.Element("DistanceMatrixResponse").Element("row");
+                XElement locationElement1 = result1.Element("element").Element("distance");
+
+                foreach (var item in result1.Elements("element"))
+                {
+                    System.Diagnostics.Debug.WriteLine(item.Element("distance").Value);
+                }
+
             }
         }
 
@@ -463,6 +494,12 @@ namespace DeliveryWolt.Controllers
 
         [ActionName("ViewMap")]
         public ActionResult viewDeliveryMap()
+        {
+            return View("MapView");
+        }
+
+        [ActionName("AddToDelivery")]
+        public ActionResult addToDeliveryList()
         {
             return View("MapView");
         }
