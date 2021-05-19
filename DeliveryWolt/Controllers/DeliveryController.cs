@@ -146,7 +146,7 @@ namespace DeliveryWolt.Controllers
                 }
             }
 
-            
+
 
             //drawDeliveryRoute method
             //displayDeliveryPage(deliveries);
@@ -172,7 +172,7 @@ namespace DeliveryWolt.Controllers
             return openManualList();
         }
 
-        public void sqlcheck(int id,int order)
+        public void sqlcheck(int id, int order)
         {
             int idworker = 1;
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
@@ -214,11 +214,11 @@ namespace DeliveryWolt.Controllers
             return openPersonalDeliveryListPage(deliveries, packages);
         }
 
-        
+
         public void getRegionsPackageAmount(string[] regions)
         {
             PackageController packageController = new PackageController();
-            
+
 
             int package_amount = packageController.getRegionsPackageAmount(regions);
             if (package_amount == 0)
@@ -230,59 +230,57 @@ namespace DeliveryWolt.Controllers
             {
                 List<Package> regionPackageList = new List<Package>();
 
-                Delivery delivery = new Delivery();
-                delivery.TotalDistance = 0;
-                List<Package> deliveryPackages = new List<Package>();
+                //List<Package> deliveryPackages = new List<Package>();
                 List<string> packageCoordinates = new List<string>();
 
                 //GL HF
                 regionPackageList = getRegionsPackageList(regions, packageController); //AVAILABLE PACKAGES IN SELECTED REGIONS
                 packageCoordinates = getPackageCoordinates(regionPackageList); //PACKAGECOORDINATES
-                deliveryPackages = addInitialDeliveries(packageCoordinates, regionPackageList); //PACKAGES CURRENTLY TO ADD TO DELIVERY (THIS LINE ADD FIRST 5)
                 //-------------------------------------------------------------------
 
                 string warehouseAddress = "Taikos pr. 100C, Kaunas"; // MAKE GETWAREHOUSE TO GET WAREHOUSE BY ID
 
-                string origin = warehouseAddress; //CHANGE CITY TO ADDRESS AND CITY WHEN FULLY WORKING
-                string destinations = "";
+                string origin = warehouseAddress;
+                List<Package> deliveryPackages = new List<Package>();
+
+                //------------------------------------
+                Delivery delivery = new Delivery();
+                delivery.TotalDistance = 0;
+                //------------------------------------
+
+                int totalDistance = 0;
+                for (int i = 0; i < regionPackageList.Count; i++)
+                {
+                    int shortestDistance = int.MaxValue;
+                    Package shortestDistancePackage = new Package();
+                    for (int j = 0; j < regionPackageList.Count; j++)
+                    {
+                        if (!deliveryPackages.Contains(regionPackageList[j]))
+                        {
+                            int distance = getDistanceToPackage(origin, regionPackageList[j].Address + " " + regionPackageList[j].City + "|");
+                            if (distance < shortestDistance)
+                            {
+                                shortestDistance = distance;
+                                shortestDistancePackage = regionPackageList[j];
+                            }
+                        }
+                    }
+                    System.Diagnostics.Debug.WriteLine("Origin BEFORE: " + origin);
+                    totalDistance += shortestDistance;
+                    System.Diagnostics.Debug.WriteLine("i: " + i + " " + totalDistance + "m");
+                    deliveryPackages.Add(shortestDistancePackage);
+                    System.Diagnostics.Debug.WriteLine("Delivery Packages Count() = " + deliveryPackages.Count());
+                    origin = shortestDistancePackage.Address + " " + shortestDistancePackage.City + "|";
+                    System.Diagnostics.Debug.WriteLine("Origin AFTER: " + origin);
+                }
+
+                delivery.TotalDistance = totalDistance;
                 for (int i = 0; i < deliveryPackages.Count; i++)
                 {
-                    destinations += deliveryPackages[i].Address + " " + deliveryPackages[i].City.ToString() + "|";
-                }
-                //-------------------------------------------------------------------
-                System.Diagnostics.Debug.WriteLine("ORIGIN: " + origin);
-                System.Diagnostics.Debug.WriteLine("DESTINATIONS: " + destinations);
-                //-------------------------------------------------------------------
-
-                string requestUri1 = string.Format("https://maps.googleapis.com/maps/api/distancematrix/xml?units=metric&origins={1}&destinations={0}&key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk", Uri.EscapeDataString(destinations), Uri.EscapeDataString(origin));
-                System.Diagnostics.Debug.WriteLine(requestUri1);
-                WebRequest request1 = WebRequest.Create(requestUri1);
-                WebResponse response1 = request1.GetResponse();
-                XDocument xdoc1 = XDocument.Load(response1.GetResponseStream());
-                XElement result1 = xdoc1.Element("DistanceMatrixResponse").Element("row");
-
-                List<string> distances = new List<string>();
-                foreach (var item in result1.Elements("element"))
-                {
-                    XElement distanceElement = item.Element("distance");
-                    if (distanceElement != null)
-                    {
-                        distances.Add(distanceElement.Element("value").Value.ToString());
-                        System.Diagnostics.Debug.WriteLine("ADDED");
-                    }
-                }
-                System.Diagnostics.Debug.WriteLine(distances.Count);
-                System.Diagnostics.Debug.WriteLine(distances[0] + " " + distances[1] + " " + distances[2]);
-                //INSERT NEW DELIVERY AND UPDATE PACKAGE DELIVERY_ID IN SQL AND CODE
-                for (int i = 1; i < deliveryPackages.Count; i++)
-                {
-                    delivery.Cost += deliveryPackages[i].CostModifier;
+                    delivery.Cost += deliveryPackages[i].CostModifier * 2;
                     delivery.Deliveryman_id = 1;
                 }
-                for (int j = 0; j < distances.Count; j++)
-                {
-                    delivery.TotalDistance += double.Parse(distances[j]);
-                }
+                
                 //INSERTING DELIVERY INTO DATABASE --->
                 string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
                 string query = String.Format("INSERT INTO `delivery`(`cost`, `total_distance`, `display`, `deliveryman_id`) VALUES ('{0}','{1}','{2}','{3}');", delivery.Cost, delivery.TotalDistance, 1, delivery.Deliveryman_id);
@@ -334,267 +332,285 @@ namespace DeliveryWolt.Controllers
             }
         }
 
-        public List<Package> getRegionsPackageList(string[] regions, PackageController packageController)
+        public int getDistanceToPackage(string origin, string destination)
         {
-            List<Package> regionPackageList = new List<Package>();
-            for (int i = 0; i < regions.Count(); i++)        //AVAILABLE PACKAGES IN SELECTED REGIONS
+            string requestUri = string.Format("https://maps.googleapis.com/maps/api/distancematrix/xml?units=metric&origins={1}&destinations={0}&key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk", Uri.EscapeDataString(destination), Uri.EscapeDataString(origin));
+            System.Diagnostics.Debug.WriteLine(requestUri);
+            WebRequest request = WebRequest.Create(requestUri);
+            WebResponse response = request.GetResponse();
+            XDocument xdoc = XDocument.Load(response.GetResponseStream());
+            XElement result = xdoc.Element("DistanceMatrixResponse").Element("row");
+
+            int distance = 0;
+            XElement distanceElement = result.Element("element").Element("distance");
+            if (distanceElement != null)
             {
-                regionPackageList.AddRange(packageController.getAvailablePackages(regions[i]));
+                distance = Int32.Parse(distanceElement.Element("value").Value);
             }
-            return regionPackageList;
+            return distance;
         }
 
-        public List<string> getPackageCoordinates(List<Package> regionPackageList)
+    public List<Package> getRegionsPackageList(string[] regions, PackageController packageController)
+    {
+        List<Package> regionPackageList = new List<Package>();
+        for (int i = 0; i < regions.Count(); i++)        //AVAILABLE PACKAGES IN SELECTED REGIONS
         {
-            List<string> packageCoordinates = new List<string>();
-            for (int i = 0; i < regionPackageList.Count; i++) //GEOCODING
-            {
-                string address = regionPackageList[i].Address + " " + regionPackageList[i].City;
-                string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk");
-                System.Diagnostics.Debug.WriteLine(requestUri);
-                WebRequest request = WebRequest.Create(requestUri);
-                WebResponse response = request.GetResponse();
-                XDocument xdoc = XDocument.Load(response.GetResponseStream());
-
-                XElement result = xdoc.Element("GeocodeResponse").Element("result");
-                XElement locationElement = result.Element("geometry").Element("location");
-                XElement lat = locationElement.Element("lat");
-                XElement lng = locationElement.Element("lng");
-
-                string coordinates = lat.Value + "," + lng.Value;
-                packageCoordinates.Add(coordinates);
-            }
-            return packageCoordinates;
+            regionPackageList.AddRange(packageController.getAvailablePackages(regions[i]));
         }
+        return regionPackageList;
+    }
 
-        public List<Package> addInitialDeliveries(List<string> packageCoordinates, List<Package> regionPackageList)
+    public List<string> getPackageCoordinates(List<Package> regionPackageList)
+    {
+        List<string> packageCoordinates = new List<string>();
+        for (int i = 0; i < regionPackageList.Count; i++) //GEOCODING
         {
-            List<Package> deliveryPackages = new List<Package>();
-            for (int i = 0; i < packageCoordinates.Count && deliveryPackages.Count <= 5; i++) //ADD TO DELIVERY LIST UNTIL SET AMOUNT
-            {
-                //System.Diagnostics.Debug.WriteLine(packageCoordinates[i]);
-                deliveryPackages.Add(regionPackageList[i]);
-            }
-            return deliveryPackages;
+            string address = regionPackageList[i].Address + " " + regionPackageList[i].City;
+            string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk");
+            System.Diagnostics.Debug.WriteLine(requestUri);
+            WebRequest request = WebRequest.Create(requestUri);
+            WebResponse response = request.GetResponse();
+            XDocument xdoc = XDocument.Load(response.GetResponseStream());
+
+            XElement result = xdoc.Element("GeocodeResponse").Element("result");
+            XElement locationElement = result.Element("geometry").Element("location");
+            XElement lat = locationElement.Element("lat");
+            XElement lng = locationElement.Element("lng");
+
+            string coordinates = lat.Value + "," + lng.Value;
+            packageCoordinates.Add(coordinates);
         }
+        return packageCoordinates;
+    }
 
-        //-------------------------------------------------------------------------------------
-        [ActionName("CreateManualDeliveryList")]
-        public ActionResult openManualList()
+    public List<Package> addInitialDeliveries(List<string> packageCoordinates, List<Package> regionPackageList)
+    {
+        List<Package> deliveryPackages = new List<Package>();
+        for (int i = 0; i < packageCoordinates.Count && deliveryPackages.Count <= 5; i++) //ADD TO DELIVERY LIST UNTIL SET AMOUNT
         {
-            int id = 1;
-            List<Package> packagesincity = new List<Package>();
-            List<Package> personal = new List<Package>();
-            PackageController packageController = new PackageController();
-            personal = packageController.getPackages2(id);
-
-
-            // reikia ideti kad grazintu abu kaip atskirus listus
-            packagesincity = viewAvaibalePackageListinCity();
-            return showPackagesInfo(packagesincity, personal);
+            //System.Diagnostics.Debug.WriteLine(packageCoordinates[i]);
+            deliveryPackages.Add(regionPackageList[i]);
         }
+        return deliveryPackages;
+    }
 
-        public List<Package> viewAvaibalePackageListinCity()
+    //-------------------------------------------------------------------------------------
+    [ActionName("CreateManualDeliveryList")]
+    public ActionResult openManualList()
+    {
+        int id = 1;
+        List<Package> packagesincity = new List<Package>();
+        List<Package> personal = new List<Package>();
+        PackageController packageController = new PackageController();
+        personal = packageController.getPackages2(id);
+
+
+        // reikia ideti kad grazintu abu kaip atskirus listus
+        packagesincity = viewAvaibalePackageListinCity();
+        return showPackagesInfo(packagesincity, personal);
+    }
+
+    public List<Package> viewAvaibalePackageListinCity()
+    {
+        PackageController packageController = new PackageController();
+        List<Package> packages = new List<Package>();
+        packages = packageController.getAvailablePackages("Kaunas");
+        return packages;
+    }
+
+
+    public ActionResult showPackagesInfo(List<Package> packages, List<Package> personal)
+    {
+        dynamic model = new ExpandoObject();
+        model.packages = packages;
+        model.personalpackages = personal;
+        return View("ManualDeliveryPage", model);
+    }
+
+    //-------------------------------------------------------------------------------------
+    [ActionName("AddPackageToPersonalDeliveryList")]
+    public void addPackageToList()
+    {
+
+    }
+
+    //-------------------------------------------------------------------------------------
+
+    public ActionResult clearDeliveryList(int id, int order, int res_by)
+    {
+        clearDelivery(id, order, res_by);
+        return openManualList();
+    }
+
+    public void clearDelivery(int id, int order, int res_by)
+    {
+        int idworker = 1;
+        string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+        // Select all
+        string query = String.Format("UPDATE `package` SET `order_by` = `order_by`-1 WHERE `order_by` > '{1}' AND `reserved_by`= '{2}'; UPDATE `package` SET `reserved_by`= '0',`status`= 'available' WHERE `Id`= '{0}'", id, order, res_by);
+        System.Diagnostics.Debug.WriteLine(query);
+        MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+        MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+        commandDatabase.CommandTimeout = 60;
+        MySqlDataReader reader;
+
+        try
         {
-            PackageController packageController = new PackageController();
-            List<Package> packages = new List<Package>();
-            packages = packageController.getAvailablePackages("Kaunas");
-            return packages;
-        }
-
-
-        public ActionResult showPackagesInfo(List<Package> packages, List<Package> personal)
-        {
-            dynamic model = new ExpandoObject();
-            model.packages = packages;
-            model.personalpackages = personal;
-            return View("ManualDeliveryPage", model);
-        }
-
-        //-------------------------------------------------------------------------------------
-        [ActionName("AddPackageToPersonalDeliveryList")]
-        public void addPackageToList()
-        {
-
-        }
-
-        //-------------------------------------------------------------------------------------
-
-        public ActionResult clearDeliveryList(int id, int order, int res_by)
-        {
-            clearDelivery(id, order, res_by);
-            return openManualList();
-        }
-
-        public void clearDelivery(int id, int order, int res_by)
-        {
-            int idworker = 1;
-            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            // Select all
-            string query = String.Format("UPDATE `package` SET `order_by` = `order_by`-1 WHERE `order_by` > '{1}' AND `reserved_by`= '{2}'; UPDATE `package` SET `reserved_by`= '0',`status`= 'available' WHERE `Id`= '{0}'", id, order, res_by);
-            System.Diagnostics.Debug.WriteLine(query);
-            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
-            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
-            commandDatabase.CommandTimeout = 60;
-            MySqlDataReader reader;
-
-            try
-            {
-                databaseConnection.Open();
-                reader = commandDatabase.ExecuteReader();
-
-                // Succesfully updated
-
-                databaseConnection.Close();
-            }
-            catch (Exception ex)
-            {
-                // Ops, maybe the id doesn't exists ?
-            }
-        }
-
-        //-------------------------------------------------------------------------------------
-        public ActionResult movePackage(int wh, int id, int res_by, int order)
-        {
-            changePackageOrder(wh, id, res_by, order);
-            return openManualList();
-        }
-
-        public void changePackageOrder(int wh, int id, int res_by, int order)
-        {
-            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            // Select all
-            int order_new = order + wh;
-
-
-            string query = String.Format("UPDATE `package` SET `order_by` = '{0}' WHERE `order_by` = '{1}' AND `reserved_by`= '{2}'; UPDATE `package` SET `order_by` = '{1}' WHERE `Id`= '{3}'", order, order_new, res_by, id);
-            System.Diagnostics.Debug.WriteLine(query);
-            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
-            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
-            commandDatabase.CommandTimeout = 60;
-            MySqlDataReader reader;
-
-            try
-            {
-                databaseConnection.Open();
-                reader = commandDatabase.ExecuteReader();
-
-                // Succesfully updated
-
-                databaseConnection.Close();
-            }
-            catch (Exception ex)
-            {
-                // Ops, maybe the id doesn't exists ?
-            }
-        }
-
-        //-------------------------------------------------------------------------------------
-        
-        public ActionResult saveDeliveriesList(int del_id, double dist, double cost)
-        {
-            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-            string query = String.Format("INSERT INTO `delivery`(`cost`, `total_distance`, `display`, `deliveryman_id`) VALUES ('{0}','{1}','{2}','{3}');", cost, dist, 1, del_id);
-            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
-            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
-            commandDatabase.CommandTimeout = 60;
-
-            try
-            {
-                databaseConnection.Open();
-                MySqlDataReader myReader = commandDatabase.ExecuteReader();
-
-                //Successful add
-
-                databaseConnection.Close();
-            }
-            catch (Exception ex)
-            {
-                // Show any error message.
-
-            }
-
-            DataTable table = new DataTable();
-            query = String.Format("SELECT `id` FROM `delivery` WHERE `deliveryman_id` = '{0}' ORDER BY `id` DESC LIMIT 1", del_id);
-            commandDatabase = new MySqlCommand(query, databaseConnection);
-            commandDatabase.CommandTimeout = 60;
             databaseConnection.Open();
-            MySqlDataAdapter adapter = new MySqlDataAdapter(commandDatabase);
-            adapter.Fill(table);
-            int id = 0;
-            foreach (DataRow row in table.Rows)
-            {
-                id = (int)row[0];
-            }
+            reader = commandDatabase.ExecuteReader();
+
+            // Succesfully updated
+
             databaseConnection.Close();
-            query = "";
-
-            PackageController packageController = new PackageController();
-            List<Package> pack = packageController.getPackages2(del_id);
-
-            foreach (Package package in pack)
-            {
-                query = query + String.Format("UPDATE `package` SET `delivery_id`='{0}', status=\"in_transit\" WHERE `Id` = '{1}';", id, package.Id);
-            }
-
-
-            commandDatabase = new MySqlCommand(query, databaseConnection);
-            commandDatabase.CommandTimeout = 60;
-            try
-            {
-                databaseConnection.Open();
-                MySqlDataReader myReader = commandDatabase.ExecuteReader();
-
-                //Successful add
-
-                databaseConnection.Close();
-            }
-            catch (Exception ex)
-            {
-                // Show any error message.
-
-            }
-
-
-            return openManualList();
         }
-
-        public ActionResult deleteDeliveries(IEnumerable<int> ids)
+        catch (Exception ex)
         {
-            if (ids != null)
-            {
-                string s = "";
-                if (ids != null)
-                {
-                    s = string.Join(",", ids);
-                }
-
-                string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-                string query = String.Format("UPDATE delivery SET display = 0 WHERE id in ({0})", s);
-                MySqlConnection databaseConnection = new MySqlConnection(connectionString);
-                MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
-                cmd.CommandTimeout = 60;
-                databaseConnection.Open();
-                cmd.ExecuteNonQuery();
-                databaseConnection.Close();
-            }
-
-            return openManualList();
-        }
-
-        [ActionName("ViewMap")]
-        public ActionResult viewDeliveryMap()
-        {
-            return View("MapView");
-        }
-
-        [ActionName("CreateDelivery")]
-        public ActionResult createDelivery()
-        {
-            string[] regions = new string[] { "Kaunas" };
-            getRegionsPackageAmount(regions);
-
-            return openDeliveryView();
+            // Ops, maybe the id doesn't exists ?
         }
     }
+
+    //-------------------------------------------------------------------------------------
+    public ActionResult movePackage(int wh, int id, int res_by, int order)
+    {
+        changePackageOrder(wh, id, res_by, order);
+        return openManualList();
+    }
+
+    public void changePackageOrder(int wh, int id, int res_by, int order)
+    {
+        string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+        // Select all
+        int order_new = order + wh;
+
+
+        string query = String.Format("UPDATE `package` SET `order_by` = '{0}' WHERE `order_by` = '{1}' AND `reserved_by`= '{2}'; UPDATE `package` SET `order_by` = '{1}' WHERE `Id`= '{3}'", order, order_new, res_by, id);
+        System.Diagnostics.Debug.WriteLine(query);
+        MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+        MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+        commandDatabase.CommandTimeout = 60;
+        MySqlDataReader reader;
+
+        try
+        {
+            databaseConnection.Open();
+            reader = commandDatabase.ExecuteReader();
+
+            // Succesfully updated
+
+            databaseConnection.Close();
+        }
+        catch (Exception ex)
+        {
+            // Ops, maybe the id doesn't exists ?
+        }
+    }
+
+    //-------------------------------------------------------------------------------------
+
+    public ActionResult saveDeliveriesList(int del_id, double dist, double cost)
+    {
+        string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+        string query = String.Format("INSERT INTO `delivery`(`cost`, `total_distance`, `display`, `deliveryman_id`) VALUES ('{0}','{1}','{2}','{3}');", cost, dist, 1, del_id);
+        MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+        MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+        commandDatabase.CommandTimeout = 60;
+
+        try
+        {
+            databaseConnection.Open();
+            MySqlDataReader myReader = commandDatabase.ExecuteReader();
+
+            //Successful add
+
+            databaseConnection.Close();
+        }
+        catch (Exception ex)
+        {
+            // Show any error message.
+
+        }
+
+        DataTable table = new DataTable();
+        query = String.Format("SELECT `id` FROM `delivery` WHERE `deliveryman_id` = '{0}' ORDER BY `id` DESC LIMIT 1", del_id);
+        commandDatabase = new MySqlCommand(query, databaseConnection);
+        commandDatabase.CommandTimeout = 60;
+        databaseConnection.Open();
+        MySqlDataAdapter adapter = new MySqlDataAdapter(commandDatabase);
+        adapter.Fill(table);
+        int id = 0;
+        foreach (DataRow row in table.Rows)
+        {
+            id = (int)row[0];
+        }
+        databaseConnection.Close();
+        query = "";
+
+        PackageController packageController = new PackageController();
+        List<Package> pack = packageController.getPackages2(del_id);
+
+        foreach (Package package in pack)
+        {
+            query = query + String.Format("UPDATE `package` SET `delivery_id`='{0}', status=\"in_transit\" WHERE `Id` = '{1}';", id, package.Id);
+        }
+
+
+        commandDatabase = new MySqlCommand(query, databaseConnection);
+        commandDatabase.CommandTimeout = 60;
+        try
+        {
+            databaseConnection.Open();
+            MySqlDataReader myReader = commandDatabase.ExecuteReader();
+
+            //Successful add
+
+            databaseConnection.Close();
+        }
+        catch (Exception ex)
+        {
+            // Show any error message.
+
+        }
+
+
+        return openManualList();
+    }
+
+    public ActionResult deleteDeliveries(IEnumerable<int> ids)
+    {
+        if (ids != null)
+        {
+            string s = "";
+            if (ids != null)
+            {
+                s = string.Join(",", ids);
+            }
+
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = String.Format("UPDATE delivery SET display = 0 WHERE id in ({0})", s);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand cmd = new MySqlCommand(query, databaseConnection);
+            cmd.CommandTimeout = 60;
+            databaseConnection.Open();
+            cmd.ExecuteNonQuery();
+            databaseConnection.Close();
+        }
+
+        return openManualList();
+    }
+
+    [ActionName("ViewMap")]
+    public ActionResult viewDeliveryMap()
+    {
+        return View("MapView");
+    }
+
+    [ActionName("CreateDelivery")]
+    public ActionResult createDelivery()
+    {
+        string[] regions = new string[] { "Kaunas" };
+        getRegionsPackageAmount(regions);
+
+        return openDeliveryView();
+    }
+}
 }
