@@ -228,14 +228,8 @@ namespace DeliveryWolt.Controllers
             }
             else
             {
-                List<Package> regionPackageList = new List<Package>();
-
-                //List<Package> deliveryPackages = new List<Package>();
-                List<string> packageCoordinates = new List<string>();
-
                 //GL HF
-                regionPackageList = getRegionsPackageList(regions, packageController); //AVAILABLE PACKAGES IN SELECTED REGIONS
-                packageCoordinates = getPackageCoordinates(regionPackageList); //PACKAGECOORDINATES
+                List<Package> regionPackageList = getRegionsPackageList(regions, packageController); //AVAILABLE PACKAGES IN SELECTED REGIONS
                 //-------------------------------------------------------------------
 
                 string warehouseAddress = "Taikos pr. 100C, Kaunas"; // MAKE GETWAREHOUSE TO GET WAREHOUSE BY ID
@@ -269,7 +263,7 @@ namespace DeliveryWolt.Controllers
                     totalDistance += shortestDistance;
                     System.Diagnostics.Debug.WriteLine("i: " + i + " " + totalDistance + "m");
                     deliveryPackages.Add(shortestDistancePackage);
-                    System.Diagnostics.Debug.WriteLine("Delivery Packages Count() = " + deliveryPackages.Count());
+                    System.Diagnostics.Debug.WriteLine("Delivery Packages Count = " + deliveryPackages.Count());
                     origin = shortestDistancePackage.Address + " " + shortestDistancePackage.City + "|";
                     System.Diagnostics.Debug.WriteLine("Origin AFTER: " + origin);
                 }
@@ -281,54 +275,39 @@ namespace DeliveryWolt.Controllers
                     delivery.Deliveryman_id = 1;
                 }
                 
-                //INSERTING DELIVERY INTO DATABASE --->
+                //Insert delivery into the database
                 string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
                 string query = String.Format("INSERT INTO `delivery`(`cost`, `total_distance`, `display`, `deliveryman_id`) VALUES ('{0}','{1}','{2}','{3}');", delivery.Cost, delivery.TotalDistance, 1, delivery.Deliveryman_id);
                 MySqlConnection databaseConnection = new MySqlConnection(connectionString);
                 MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
                 commandDatabase.CommandTimeout = 60;
-
                 try
                 {
                     databaseConnection.Open();
                     MySqlDataReader myReader = commandDatabase.ExecuteReader();
-                    //Successful add
                     databaseConnection.Close();
                 }
-                catch (Exception ex)
-                {
-                    // Show any error message.
-                }
+                catch (Exception ex) { }
 
-                // SELECT * FROM Table ORDER BY ID DESC LIMIT 1 <-- select last created delivery from database to get id and pass it to package
                 delivery = getLastDelivery(1);
                 System.Diagnostics.Debug.WriteLine(delivery.Id);
 
-                /*
-                for (int i = 0; i < deliveryPackages.Count; i++) //UPDATE EACH PACKAGE STATE
+                //Updating each packageState
+                for (int i = 0; i < deliveryPackages.Count; i++) 
                 {
-                    query = String.Format("UPDATE `package` SET `status`= '{0}', `delivery_id`= '{1}', `reserved_by`= '{2}' WHERE `Id`= '{3}'", deliveryPackages[i].Statuses[1], delivery.Id, 1, deliveryPackages[i].Id); //CHANGE PACKAGE STATE TO RESERVED
-
+                    query = String.Format("UPDATE `package` SET `status`= '{0}', `delivery_id`= '{1}', `reserved_by`= '{2}' WHERE `Id`= '{3}'", deliveryPackages[i].Statuses[1], delivery.Id, 1, deliveryPackages[i].Id);
                     MySqlConnection databaseConnection1 = new MySqlConnection(connectionString);
                     MySqlCommand commandDatabase1 = new MySqlCommand(query, databaseConnection1);
                     commandDatabase.CommandTimeout = 60;
                     MySqlDataReader reader;
-
                     try
                     {
                         databaseConnection1.Open();
                         reader = commandDatabase1.ExecuteReader();
-
-                        // Succesfully updated
-
                         databaseConnection1.Close();
                     }
-                    catch (Exception ex)
-                    {
-                        // Ops, maybe the id doesn't exists ?
-                    }
+                    catch (Exception ex) { }
                 }
-                */
             }
         }
 
