@@ -214,62 +214,46 @@ namespace DeliveryWolt.Controllers
             return openPersonalDeliveryListPage(deliveries, packages);
         }
 
+        
         public void getRegionsPackageAmount(string[] regions)
         {
             PackageController packageController = new PackageController();
-            List<string> packageCoordinates = new List<string>();
+            
 
             int package_amount = packageController.getRegionsPackageAmount(regions);
             if (package_amount == 0)
             {
                 //displayNoPackagesNotification()
-                System.Diagnostics.Debug.WriteLine("EMTPY");
+                System.Diagnostics.Debug.WriteLine("NO PACKAGES AVAILABLE...");
             }
             else
             {
+                List<Package> regionPackageList = new List<Package>();
+
                 Delivery delivery = new Delivery();
                 delivery.TotalDistance = 0;
-
                 List<Package> deliveryPackages = new List<Package>();
-                List<Package> regionPackageList = new List<Package>();
+                List<string> packageCoordinates = new List<string>();
+
                 //GL HF
-                for (int i = 0; i < regions.Count(); i++)        //AVAILABLE PACKAGES IN SELECTED REGIONS
-                {
-                    regionPackageList.AddRange(packageController.getAvailablePackages(regions[i]));
-                }
-                for(int i = 0; i < regionPackageList.Count; i++) //GEOLOCATION 
-                {
-                    string address = regionPackageList[i].City;
-                    string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk");
-                    System.Diagnostics.Debug.WriteLine(requestUri);
-                    WebRequest request = WebRequest.Create(requestUri);
-                    WebResponse response = request.GetResponse();
-                    XDocument xdoc = XDocument.Load(response.GetResponseStream());
+                regionPackageList = getRegionsPackageList(regions, packageController); //AVAILABLE PACKAGES IN SELECTED REGIONS
+                packageCoordinates = getPackageCoordinates(regionPackageList); //PACKAGECOORDINATES
+                deliveryPackages = addInitialDeliveries(packageCoordinates, regionPackageList); //PACKAGES CURRENTLY TO ADD TO DELIVERY (THIS LINE ADD FIRST 5)
+                //-------------------------------------------------------------------
 
-                    XElement result = xdoc.Element("GeocodeResponse").Element("result");
-                    XElement locationElement = result.Element("geometry").Element("location");
-                    XElement lat = locationElement.Element("lat");
-                    XElement lng = locationElement.Element("lng");
+                string warehouseAddress = "Taikos pr. 100C, Kaunas"; // MAKE GETWAREHOUSE TO GET WAREHOUSE BY ID
 
-                    string coordinates = lat.Value + "," + lng.Value;
-                    packageCoordinates.Add(coordinates);
-
-                    System.Diagnostics.Debug.WriteLine("NOT EMPTY");
-                }
-                for (int i = 0; i < packageCoordinates.Count && deliveryPackages.Count <= 5; i++) //ADD TO DELIVERY LIST UNTIL SET AMOUNT
-                {
-                    //System.Diagnostics.Debug.WriteLine(packageCoordinates[i]);
-                    deliveryPackages.Add(regionPackageList[i]);
-                }
-
-                string origin = deliveryPackages[0].City.ToString(); //CHANGE CITY TO ADDRESS AND CITY WHEN FULLY WORKING
+                string origin = warehouseAddress; //CHANGE CITY TO ADDRESS AND CITY WHEN FULLY WORKING
                 string destinations = "";
-                for (int i = 1; i < deliveryPackages.Count; i++) //PAKEISTI ATGAL i = 1, kad pirmas butu origin for testing padariau sitaip dabar
+                for (int i = 0; i < deliveryPackages.Count; i++)
                 {
-                    destinations += deliveryPackages[i].City.ToString() + "|";
+                    destinations += deliveryPackages[i].Address + " " + deliveryPackages[i].City.ToString() + "|";
                 }
+                //-------------------------------------------------------------------
                 System.Diagnostics.Debug.WriteLine("ORIGIN: " + origin);
                 System.Diagnostics.Debug.WriteLine("DESTINATIONS: " + destinations);
+                //-------------------------------------------------------------------
+
                 string requestUri1 = string.Format("https://maps.googleapis.com/maps/api/distancematrix/xml?units=metric&origins={1}&destinations={0}&key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk", Uri.EscapeDataString(destinations), Uri.EscapeDataString(origin));
                 System.Diagnostics.Debug.WriteLine(requestUri1);
                 WebRequest request1 = WebRequest.Create(requestUri1);
@@ -288,7 +272,7 @@ namespace DeliveryWolt.Controllers
                     }
                 }
                 System.Diagnostics.Debug.WriteLine(distances.Count);
-                System.Diagnostics.Debug.WriteLine(distances[0] + " " + distances[1]);
+                System.Diagnostics.Debug.WriteLine(distances[0] + " " + distances[1] + " " + distances[2]);
                 //INSERT NEW DELIVERY AND UPDATE PACKAGE DELIVERY_ID IN SQL AND CODE
                 for (int i = 1; i < deliveryPackages.Count; i++)
                 {
@@ -322,7 +306,7 @@ namespace DeliveryWolt.Controllers
                 delivery = getLastDelivery(1);
                 System.Diagnostics.Debug.WriteLine(delivery.Id);
 
-
+                /*
                 for (int i = 0; i < deliveryPackages.Count; i++) //UPDATE EACH PACKAGE STATE
                 {
                     query = String.Format("UPDATE `package` SET `status`= '{0}', `delivery_id`= '{1}', `reserved_by`= '{2}' WHERE `Id`= '{3}'", deliveryPackages[i].Statuses[1], delivery.Id, 1, deliveryPackages[i].Id); //CHANGE PACKAGE STATE TO RESERVED
@@ -346,10 +330,53 @@ namespace DeliveryWolt.Controllers
                         // Ops, maybe the id doesn't exists ?
                     }
                 }
-                
+                */
             }
         }
 
+        public List<Package> getRegionsPackageList(string[] regions, PackageController packageController)
+        {
+            List<Package> regionPackageList = new List<Package>();
+            for (int i = 0; i < regions.Count(); i++)        //AVAILABLE PACKAGES IN SELECTED REGIONS
+            {
+                regionPackageList.AddRange(packageController.getAvailablePackages(regions[i]));
+            }
+            return regionPackageList;
+        }
+
+        public List<string> getPackageCoordinates(List<Package> regionPackageList)
+        {
+            List<string> packageCoordinates = new List<string>();
+            for (int i = 0; i < regionPackageList.Count; i++) //GEOCODING
+            {
+                string address = regionPackageList[i].Address + " " + regionPackageList[i].City;
+                string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), "AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk");
+                System.Diagnostics.Debug.WriteLine(requestUri);
+                WebRequest request = WebRequest.Create(requestUri);
+                WebResponse response = request.GetResponse();
+                XDocument xdoc = XDocument.Load(response.GetResponseStream());
+
+                XElement result = xdoc.Element("GeocodeResponse").Element("result");
+                XElement locationElement = result.Element("geometry").Element("location");
+                XElement lat = locationElement.Element("lat");
+                XElement lng = locationElement.Element("lng");
+
+                string coordinates = lat.Value + "," + lng.Value;
+                packageCoordinates.Add(coordinates);
+            }
+            return packageCoordinates;
+        }
+
+        public List<Package> addInitialDeliveries(List<string> packageCoordinates, List<Package> regionPackageList)
+        {
+            List<Package> deliveryPackages = new List<Package>();
+            for (int i = 0; i < packageCoordinates.Count && deliveryPackages.Count <= 5; i++) //ADD TO DELIVERY LIST UNTIL SET AMOUNT
+            {
+                //System.Diagnostics.Debug.WriteLine(packageCoordinates[i]);
+                deliveryPackages.Add(regionPackageList[i]);
+            }
+            return deliveryPackages;
+        }
 
         //-------------------------------------------------------------------------------------
         [ActionName("CreateManualDeliveryList")]
@@ -561,10 +588,10 @@ namespace DeliveryWolt.Controllers
             return View("MapView");
         }
 
-        [ActionName("AddToDelivery")]
-        public ActionResult addToDeliveryList()
+        [ActionName("CreateDelivery")]
+        public ActionResult createDelivery()
         {
-            string[] regions = new string[] { "Kaunas", "Vilnius" };
+            string[] regions = new string[] { "Kaunas" };
             getRegionsPackageAmount(regions);
 
             return openDeliveryView();
