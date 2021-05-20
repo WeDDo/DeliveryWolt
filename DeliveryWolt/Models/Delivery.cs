@@ -13,6 +13,7 @@ namespace DeliveryWolt.Models
         public bool Displayed { get; set; }
         public int Deliveryman_id { get; set; }
         public List<Package> Packages;
+        public Point[] Points;
 
         public Delivery() 
         {
@@ -27,6 +28,15 @@ namespace DeliveryWolt.Models
             Displayed = displayed;
             Deliveryman_id = deliveryman_id;
             Packages = new List<Package>();
+        }
+
+        public void SetPoints(List<Point> points)
+        {
+            Points = new Point[points.Count];
+            for (int i = 0; i < points.Count; i++)
+            {
+                Points[i] = points[i];
+            }
         }
     }
 }

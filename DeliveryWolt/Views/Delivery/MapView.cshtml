@@ -39,85 +39,80 @@
         }
     </style>
     <script>
+        var coordinates = @Html.Raw(Json.Encode(ViewData["PointList"]));
+
         function initMap() {
-            const directionsService = new google.maps.DirectionsService();
-            const directionsRenderer = new google.maps.DirectionsRenderer();
-            const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 7,
-                center: { lat: 41.85, lng: -87.65 },
-            });
-            directionsRenderer.setMap(map);
-
-            const onChangeHandler = function () {
-                calculateAndDisplayRoute(directionsService, directionsRenderer);
+            console.log("INIT")
+            var mapOptions = {
+                center: new google.maps.LatLng(coordinates[0].split(",")[0], coordinates[0].split(",")[1]),
+                zoom: 10,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
             };
-            document
-                .getElementById("start")
-                .addEventListener("change", onChangeHandler);
-            document
-                .getElementById("end")
-                .addEventListener("change", onChangeHandler);
-        }
+            var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+            var lat_lng = new Array();
+            var latlngbounds = new google.maps.LatLngBounds();
+            for (i = 0; i < coordinates.length; i++) {
+                var data = coordinates[i].split(",")
+                console.log(data)
+                var myLatlng = new google.maps.LatLng(data[0], data[1]);
+                lat_lng.push(myLatlng);
+                var marker = new google.maps.Marker({
+                    position: myLatlng,
+                    map: map,
+                    title: data.timestamp
+                });
+                // console.log(i)
 
-        function calculateAndDisplayRoute(directionsService, directionsRenderer) {
-            directionsService.route(
-                {
-                    origin: {
-                        query: document.getElementById("start").value,
-                    },
-                    destination: {
-                        query: document.getElementById("end").value,
-                    },
-                    travelMode: google.maps.TravelMode.DRIVING,
-                },
-                (response, status) => {
-                    if (status === "OK") {
-                        directionsRenderer.setDirections(response);
-                    } else {
-                        window.alert("Directions request failed due to " + status);
+                latlngbounds.extend(marker.position);
+                (function (marker, data) {
+                    google.maps.event.addListener(marker, "click", function (e) {
+                        infoWindow.setContent(data.timestamp);
+                        infoWindow.open(map, marker);
+                    });
+                })(marker, data);
+            }
+            map.setCenter(latlngbounds.getCenter());
+            map.fitBounds(latlngbounds);
+
+            //***********ROUTING****************//
+
+            //Initialize the Path Array
+            var path = new google.maps.MVCArray();
+
+            //Initialize the Direction Service
+            var service = new google.maps.DirectionsService();
+
+            //Set the Path Stroke Color
+            var poly = new google.maps.Polyline({ map: map, strokeColor: '#4986E7' });
+
+
+            //Loop and Draw Path Route between the Points on MAP
+            for (var i = 0; i < lat_lng.length; i++) {
+                if ((i + 1) < lat_lng.length) {
+                    var src = lat_lng[i];
+                    var des = lat_lng[i + 1];
+                    poly.setPath(path);
+                    service.route({
+                        origin: src,
+                        destination: des,
+                        travelMode: google.maps.DirectionsTravelMode.DRIVING
+                    }, function (result, status) {
+                        if (status == google.maps.DirectionsStatus.OK) {
+                            for (var i = 0, len = result.routes[0].overview_path.length; i < len; i++) {
+                        path.push(result.routes[0].overview_path[i]);
                     }
                 }
-            );
+            });
         }
+        }
+    }
     </script>
 </head>
 <body>
-    <div id="floating-panel">
-        <b>Start: </b>
-        <select id="start">
-            <option value="chicago, il">Chicago</option>
-            <option value="st louis, mo">St Louis</option>
-            <option value="joplin, mo">Joplin, MO</option>
-            <option value="oklahoma city, ok">Oklahoma City</option>
-            <option value="amarillo, tx">Amarillo</option>
-            <option value="gallup, nm">Gallup, NM</option>
-            <option value="flagstaff, az">Flagstaff, AZ</option>
-            <option value="winona, az">Winona</option>
-            <option value="kingman, az">Kingman</option>
-            <option value="barstow, ca">Barstow</option>
-            <option value="san bernardino, ca">San Bernardino</option>
-            <option value="los angeles, ca">Los Angeles</option>
-        </select>
-        <b>End: </b>
-        <select id="end">
-            <option value="chicago, il">Chicago</option>
-            <option value="st louis, mo">St Louis</option>
-            <option value="joplin, mo">Joplin, MO</option>
-            <option value="oklahoma city, ok">Oklahoma City</option>
-            <option value="amarillo, tx">Amarillo</option>
-            <option value="gallup, nm">Gallup, NM</option>
-            <option value="flagstaff, az">Flagstaff, AZ</option>
-            <option value="winona, az">Winona</option>
-            <option value="kingman, az">Kingman</option>
-            <option value="barstow, ca">Barstow</option>
-            <option value="san bernardino, ca">San Bernardino</option>
-            <option value="los angeles, ca">Los Angeles</option>
-        </select>
-    </div>
     <div id="map"></div>
 
     <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk&callback=initMap&libraries=&v=weekly"
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0fJTwlRylJMp5EdC-gfdAfLgI8G9BaXk&callback=initMap"
             async></script>
 </body>
 </html>
