@@ -218,6 +218,8 @@ namespace DeliveryWolt.Controllers
 
         public void getRegionsPackageAmount(string[] regions)
         {
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+
             PackageController packageController = new PackageController();
 
 
@@ -232,7 +234,7 @@ namespace DeliveryWolt.Controllers
                 //GL HF
 
                 List<Package> regionPackageList = getRegionsPackageList(regions, packageController); //AVAILABLE PACKAGES IN SELECTED REGIONS
-                string warehouseAddress = "Taikos pr. 100C, Kaunas"; // MAKE GETWAREHOUSE TO GET WAREHOUSE BY ID
+                string warehouseAddress = packageController.getWarehouseAddress(regionPackageList[0].Warehouse_id); // MAKE GETWAREHOUSE TO GET WAREHOUSE BY ID
                 string origin = warehouseAddress;
                 List<Package> deliveryPackages = new List<Package>();
 
@@ -253,7 +255,7 @@ namespace DeliveryWolt.Controllers
                             int distance = getDistanceToPackage(origin, regionPackageList[j].Address + " " + regionPackageList[j].City + "|");
                             if (distance < shortestDistance)
                             {
-                                shortestDistance = distance;
+                                shortestDistance = changeShortestDistance(shortestDistance, distance);
                                 shortestDistancePackage = regionPackageList[j];
                             }
                         }
@@ -267,26 +269,9 @@ namespace DeliveryWolt.Controllers
                     System.Diagnostics.Debug.WriteLine("Origin AFTER: " + origin);
                 }
 
-                delivery.TotalDistance = totalDistance;
-                for (int i = 0; i < deliveryPackages.Count; i++)
-                {
-                    delivery.Cost += deliveryPackages[i].CostModifier * 2;
-                    delivery.Deliveryman_id = 1;
-                }
+                delivery = assignDelivery(totalDistance, deliveryPackages);
 
-                //Insert delivery into the database
-                string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
-                string query = String.Format("INSERT INTO `delivery`(`cost`, `total_distance`, `display`, `deliveryman_id`) VALUES ('{0}','{1}','{2}','{3}');", delivery.Cost, delivery.TotalDistance, 1, delivery.Deliveryman_id);
-                MySqlConnection databaseConnection = new MySqlConnection(connectionString);
-                MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
-                commandDatabase.CommandTimeout = 60;
-                try
-                {
-                    databaseConnection.Open();
-                    MySqlDataReader myReader = commandDatabase.ExecuteReader();
-                    databaseConnection.Close();
-                }
-                catch (Exception ex) { }
+                insertNewDelivery(delivery);
 
                 delivery = getLastDelivery(1);
                 System.Diagnostics.Debug.WriteLine(delivery.Id);
@@ -302,29 +287,76 @@ namespace DeliveryWolt.Controllers
                 }
                 getPoints(delivery.Id);
 
-                
-                //Updating each packageState
-                for (int i = 0; i < deliveryPackages.Count; i++) 
-                {
-                    query = String.Format("UPDATE `package` SET `status`= '{0}', `delivery_id`= '{1}', `reserved_by`= '{2}' WHERE `Id`= '{3}'", deliveryPackages[i].Statuses[0], delivery.Id, 1, deliveryPackages[i].Id); //CHANGE LATER TO RESERVED
-                    MySqlConnection databaseConnection1 = new MySqlConnection(connectionString);
-                    MySqlCommand commandDatabase1 = new MySqlCommand(query, databaseConnection1);
-                    commandDatabase.CommandTimeout = 60;
-                    MySqlDataReader reader;
-                    try
-                    {
-                        databaseConnection1.Open();
-                        reader = commandDatabase1.ExecuteReader();
-                        databaseConnection1.Close();
-                    }
-                    catch (Exception ex) { }
-                }
-                
+                updateDeliveryPackages(deliveryPackages, delivery);
             }
         }
 
-        public void insertPoint(string coordinates, int queue_nr, int delivery_id)
+        public bool updateDeliveryPackages(List<Package> deliveryPackages, Delivery delivery)
         {
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            bool updated = false;
+            //Updating each packageState
+            for (int i = 0; i < deliveryPackages.Count; i++)
+            {
+                string query = String.Format("UPDATE `package` SET `status`= '{0}', `delivery_id`= '{1}', `reserved_by`= '{2}' WHERE `Id`= '{3}'", deliveryPackages[i].Statuses[0], delivery.Id, 1, deliveryPackages[i].Id); //CHANGE LATER TO RESERVED
+                MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+                MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+                commandDatabase.CommandTimeout = 60;
+                MySqlDataReader reader;
+                try
+                {
+                    databaseConnection.Open();
+                    reader = commandDatabase.ExecuteReader();
+                    updated = true;
+                    databaseConnection.Close();
+                }
+                catch (Exception ex) { }
+            }
+
+            return updated;
+        }
+
+        public bool insertNewDelivery(Delivery delivery)
+        {
+            bool inserted = false;
+            //Insert delivery into the database
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = String.Format("INSERT INTO `delivery`(`cost`, `total_distance`, `display`, `deliveryman_id`) VALUES ('{0}','{1}','{2}','{3}');", delivery.Cost, delivery.TotalDistance, 1, delivery.Deliveryman_id);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            try
+            {
+                databaseConnection.Open();
+                MySqlDataReader myReader = commandDatabase.ExecuteReader();
+                inserted = true;
+                databaseConnection.Close();
+            }
+            catch (Exception ex) { }
+
+            return inserted;
+        }
+
+        public int changeShortestDistance(int shortestDistance, int distance)
+        {
+            return shortestDistance = distance;
+        }
+
+        public Delivery assignDelivery(int totalDistance, List<Package> deliveryPackages)
+        {
+            Delivery delivery = new Delivery();
+            delivery.TotalDistance = totalDistance;
+            for (int i = 0; i < deliveryPackages.Count; i++)
+            {
+                delivery.Cost += deliveryPackages[i].CostModifier * 2;
+                delivery.Deliveryman_id = 1;
+            }
+            return delivery;
+        }
+
+        public bool insertPoint(string coordinates, int queue_nr, int delivery_id)
+        {
+            bool inserted = false;
             string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
             string query = String.Format("INSERT INTO `point`(`coordinates`, `queue_nr`, `delivery_id`) VALUES ('{0}','{1}','{2}');", coordinates, queue_nr, delivery_id);
             MySqlConnection databaseConnection = new MySqlConnection(connectionString);
@@ -334,9 +366,12 @@ namespace DeliveryWolt.Controllers
             {
                 databaseConnection.Open();
                 MySqlDataReader myReader = commandDatabase.ExecuteReader();
+                inserted = true;
                 databaseConnection.Close();
             }
             catch (Exception ex) { }
+
+            return inserted;
         }
 
         public List<Point> getPoints(int delivery_id)
