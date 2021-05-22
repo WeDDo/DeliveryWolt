@@ -12,8 +12,13 @@ namespace DeliveryWolt.Models
         public double TotalDistance { get; set; }
         public bool Displayed { get; set; }
         public int Deliveryman_id { get; set; }
+        public List<Package> Packages;
+        public Point[] Points;
 
-        public Delivery() { }
+        public Delivery() 
+        {
+            Packages = new List<Package>();
+        }
 
         public Delivery(int id, double cost, double totalDistance, bool displayed, int deliveryman_id)
         {
@@ -22,6 +27,16 @@ namespace DeliveryWolt.Models
             TotalDistance = totalDistance;
             Displayed = displayed;
             Deliveryman_id = deliveryman_id;
+            Packages = new List<Package>();
+        }
+
+        public void SetPoints(List<Point> points)
+        {
+            Points = new Point[points.Count];
+            for (int i = 0; i < points.Count; i++)
+            {
+                Points[i] = points[i];
+            }
         }
     }
 }

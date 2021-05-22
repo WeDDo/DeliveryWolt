@@ -181,6 +181,45 @@ namespace DeliveryWolt.Controllers
             return packages;
         }
 
+        public string getWarehouseAddress(int warehouseId)
+        {
+            string connectionString = "datasource=127.0.0.1;port=3306;username=root;password=;database=deliverywolt;";
+            string query = String.Format("SELECT * FROM `warehouse` WHERE id = {0}", warehouseId);
+            MySqlConnection databaseConnection = new MySqlConnection(connectionString);
+            MySqlCommand commandDatabase = new MySqlCommand(query, databaseConnection);
+            commandDatabase.CommandTimeout = 60;
+            MySqlDataReader reader;
+
+            string warehouseAddress = "";
+            try
+            {
+                databaseConnection.Open();
+                reader = commandDatabase.ExecuteReader();
+                // Success, now list 
+
+                // If there are available rows
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        warehouseAddress = reader.GetString(1);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No rows found.");
+                }
+
+                databaseConnection.Close();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+
+            return warehouseAddress;
+        }
+
         public int select(int id)
         {
             int idwarehouse = 0;
