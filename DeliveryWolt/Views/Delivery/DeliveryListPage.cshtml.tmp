@@ -1,0 +1,272 @@
+﻿@using DeliveryWolt.Models
+@model dynamic
+
+@{
+    ViewBag.Title = "DeliveryListPage";
+}
+
+
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>DeliveryListPage</title>
+</head>
+<body>
+    @Html.ActionLink("View map", "ViewMap", "Delivery")
+
+    @if (Model.viewDel == "ViewDelivery")
+    {
+        <div>
+            <dl class="dl-horizontal">
+                @foreach (Delivery delivery in Model.delivery)
+                {
+                    <dt>
+                        @Html.DisplayNameFor(model => delivery.Id)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => delivery.Id)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => delivery.Cost)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => delivery.Cost)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => delivery.TotalDistance)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => delivery.TotalDistance)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => delivery.Deliveryman_id)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => delivery.Deliveryman_id)
+                    </dd>
+                }
+            </dl>
+
+            @foreach (Package package in Model.packages)
+            {
+                <dl class="dl-horizontal">
+                    <dt>
+                        @Html.DisplayNameFor(model => package.Id)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.Id)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => package.Dimensions)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.Dimensions)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => package.Weight)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.Weight)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => package.Due)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.Due)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => package.Address)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.Address)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => package.Status)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.Status)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => package.CostModifier)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.CostModifier)
+                    </dd>
+
+                    <dt>
+                        @Html.DisplayNameFor(model => package.Priority)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.Priority)
+                    </dd>
+                    <dt>
+                        @Html.DisplayNameFor(model => package.City)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.City)
+                    </dd>
+                    <dt>
+                        @Html.DisplayNameFor(model => package.Warehouse_id)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.Warehouse_id)
+                    </dd>
+                    <dt>
+                        @Html.DisplayNameFor(model => package.Delivery_id)
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => package.Delivery_id)
+                    </dd>
+                </dl>
+
+                var options = new SelectList(package.getStatuses());
+
+                Html.BeginForm("changeState", "Delivery");
+
+                <input type="hidden" id="id" name="id" value="@package.Id" />
+                @Html.DropDownList("dropdown", options, new { onChange = "this.form.submit()" });
+
+                Html.EndForm();
+
+
+            }
+        </div>
+    }
+
+    @if (Model.viewDel == "ViewPersonalDeliveryList")
+    {
+        <div>
+
+            <li>@Html.ActionLink("Create New Delivery", "CreateNewDelivery", "Delivery")</li>
+
+            <input type="button" value="Update" onclick="UpdateStatuses()" />
+            <dl class="dl-horizontal">
+
+                @foreach (Delivery delivery in Model.delivery)
+                {
+                    if (delivery.Displayed == true)
+                    {
+                        <dt>
+                            @Html.DisplayNameFor(model => delivery.Id)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => delivery.Id)
+                        </dd>
+
+                        <dt>
+                            @Html.DisplayNameFor(model => delivery.Cost)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => delivery.Cost)
+                        </dd>
+
+                        <dt>
+                            @Html.DisplayNameFor(model => delivery.TotalDistance)
+                        </dt>
+
+                        <dd>
+                            @Html.DisplayFor(model => delivery.TotalDistance)
+                        </dd>
+                        <dt>
+                            Remove
+                        </dt>
+
+                        <dd>
+                            <input type="checkbox" class="checkbox" id="@delivery.Id" name="checkbox" />
+                        </dd>
+                        <div>
+                            <table style="width:100%">
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Id</th>
+                                    <th>Dimensions</th>
+                                    <th>Weight</th>
+                                    <th>Due</th>
+                                    <th>Address</th>
+                                    <th>Cost Modifier</th>
+                                    <th>Priority</th>
+                                    <th>City</th>
+                                    <th>Warehouse Id</th>
+                                </tr>
+                                @foreach (Package package in Model.packages)
+                                {
+                                    if (delivery.Id == package.Delivery_id)
+                                    {
+                                        <tr>
+                                            <td>@Html.DisplayFor(model => package.Order_by)</td>
+                                            <td>@Html.DisplayFor(model => package.Id)</td>
+                                            <td>@Html.DisplayFor(model => package.Dimensions)</td>
+                                            <td>@Html.DisplayFor(model => package.Weight)</td>
+                                            <td>@Html.DisplayFor(model => package.Due)</td>
+                                            <td>@Html.DisplayFor(model => package.Address)</td>
+                                            <td>@Html.DisplayFor(model => package.CostModifier)</td>
+                                            <td>@Html.DisplayFor(model => package.Priority)</td>
+                                            <td>@Html.DisplayFor(model => package.City)</td>
+                                            <td>@Html.DisplayFor(model => package.Warehouse_id)</td>
+                                        </tr>
+                                    }
+                                }
+                            </table>
+                        </div>
+                    }
+                }
+
+            </dl>
+
+
+        </div>
+    }
+
+</body>
+</html>
+
+    <script>
+
+    function UpdateStatuses() {
+        const ids = [...document.querySelectorAll("[name=checkbox]")].filter(({checked}) => checked).map(({id}) => id)
+        var idList = new Array();
+        for (var i = 0; i < ids.length; i++) {
+            idList.push(parseInt(ids[i]));
+        }
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("deleteDeliveries", "Delivery")",
+            data: ({ ids: idList }),
+            success: function (data) {
+                setInterval('location.reload()', 100);
+            },
+            error: function (data) {
+                console.log(data);
+            }
+
+        });
+    }
+    </script>
+
